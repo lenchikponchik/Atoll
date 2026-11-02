@@ -725,19 +725,14 @@ struct NotchHomeView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                if Defaults[.showCalendar] {
-                    Group {
-                        if shouldShowMusicPlayer {
-                            CalendarView()
-                        } else {
-                            StandaloneCalendarView()
+                // The calendar only takes the home tab when no music player is shown
+                if Defaults[.showCalendar] && !shouldShowMusicPlayer {
+                    StandaloneCalendarView()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .onHover { isHovering in
+                            vm.isHoveringCalendar = isHovering
                         }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .onHover { isHovering in
-                        vm.isHoveringCalendar = isHovering
-                    }
-                    .environmentObject(vm)
+                        .environmentObject(vm)
                 }
                 
                 if Defaults[.showMirror],

@@ -117,6 +117,15 @@ struct InlineHUD: View {
     
     @State private var displayName: String = ""
 
+    /// 3D animation for the connected Apple/Beats model; nil for other headphones.
+    private var headphoneAnimationURL: URL? {
+        guard useBluetoothHUD3DIcon,
+              let deviceType = bluetoothManager.lastConnectedDevice?.deviceType else { return nil }
+        let name = deviceType.inlineHUDAnimationBaseName
+        return Bundle.main.url(forResource: name, withExtension: "mov", subdirectory: "BluetoothHUDAnimations")
+            ?? Bundle.main.url(forResource: name, withExtension: "mov")
+    }
+
     static func listeningModeWingWidth(minimalistic: Bool) -> CGFloat {
         minimalistic ? 128 : 160
     }
@@ -244,7 +253,12 @@ struct InlineHUD: View {
                 Group {
                     switch (type) {
                         case .volume:
-                            if icon.isEmpty {
+                            if icon.isEmpty, bluetoothManager.isBluetoothAudioConnected, let url = headphoneAnimationURL {
+                                // Same model animation as the connect HUD (Apple/Beats only)
+                                LoopingVideoIcon(url: url, size: CGSize(width: 20, height: 20))
+                                    .opacity(value.isZero ? 0.6 : 1)
+                                    .frame(width: 20, height: 20, alignment: .leading)
+                            } else if icon.isEmpty {
                                 // Show headphone icon if Bluetooth audio is connected, otherwise speaker
                                 let baseIcon = bluetoothManager.isBluetoothAudioConnected ? "headphones" : SpeakerSymbol(value)
                                 Image(systemName: baseIcon)
@@ -282,10 +296,7 @@ struct InlineHUD: View {
                                 AirPodsListeningModeSymbol(mode: listeningMode)
                                     .contentTransition(.interpolate)
                                     .frame(width: 20, height: 15, alignment: .center)
-                            } else if useBluetoothHUD3DIcon,
-                               let deviceType = bluetoothManager.lastConnectedDevice?.deviceType,
-                               let url = Bundle.main.url(forResource: deviceType.inlineHUDAnimationBaseName, withExtension: "mov", subdirectory: "BluetoothHUDAnimations")
-                                      ?? Bundle.main.url(forResource: deviceType.inlineHUDAnimationBaseName, withExtension: "mov") {
+                            } else if let url = headphoneAnimationURL {
                                 LoopingVideoIcon(url: url, size: CGSize(width: 20, height: 20))
                                     .frame(width: 20, height: 20, alignment: .center)
                             } else {
