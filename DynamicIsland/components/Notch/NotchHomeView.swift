@@ -693,11 +693,18 @@ struct NotchHomeView: View {
     @Default(.autoHideInactiveNotchMediaPlayer) private var autoHideInactiveNotchMediaPlayer
     let albumArtNamespace: Namespace.ID
 
+    // Players like Yandex Music briefly report no track while switching songs;
+    // keep the player up for a moment so the calendar doesn't flash in.
+    private static let sessionLossGracePeriod: Duration = .seconds(3)
+    @State private var isInSessionLossGrace = false
+    @State private var sessionLossGraceTask: Task<Void, Never>?
+
     /// Whether the music player should actively display (enabled AND has real content).
     private var shouldShowMusicPlayer: Bool {
-        showStandardMediaControls && (!autoHideInactiveNotchMediaPlayer || musicManager.hasActiveSession)
+        showStandardMediaControls
+            && (!autoHideInactiveNotchMediaPlayer || musicManager.hasActiveSession || isInSessionLossGrace)
     }
-    
+
     var body: some View {
         Group {
             if !coordinator.firstLaunch {
@@ -705,6 +712,19 @@ struct NotchHomeView: View {
             }
         }
         .transition(.opacity.combined(with: .blurReplace))
+        .onChange(of: musicManager.hasActiveSession) { wasActive, isActive in
+            sessionLossGraceTask?.cancel()
+            guard wasActive, !isActive else {
+                isInSessionLossGrace = false
+                return
+            }
+            isInSessionLossGrace = true
+            sessionLossGraceTask = Task { @MainActor in
+                try? await Task.sleep(for: Self.sessionLossGracePeriod)
+                guard !Task.isCancelled else { return }
+                isInSessionLossGrace = false
+            }
+        }
     }
 
     private var mainContent: some View {
