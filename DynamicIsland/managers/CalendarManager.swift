@@ -65,7 +65,10 @@ class CalendarManager: ObservableObject {
         setupEventStoreChangedObserver()
         startLockScreenRefreshLoop()
         Task {
-            await reloadCalendarAndReminderLists()
+            // Resolve access up front: otherwise it was only checked by Settings or the
+            // lock screen widget, and the island showed "no events" until then
+            await checkCalendarAuthorization()
+            await checkReminderAuthorization()
         }
     }
 
@@ -451,3 +454,4 @@ private actor EventFetchLimiter {
         continuation.resume()
     }
 }
+

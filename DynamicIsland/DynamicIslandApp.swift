@@ -644,6 +644,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Defaults[.didApplyDefaultLaunchAtLogin] = true
         }
 
+        // Load calendar access and events at launch so the first open isn't empty
+        if Defaults[.showCalendar] && !AppRuntimeEnvironment.isUITesting {
+            _ = CalendarManager.shared
+        }
+
         // Setup screenshot redirection into the shelf
         if !AppRuntimeEnvironment.isUITesting {
             ScreenshotShelfService.shared.start()
