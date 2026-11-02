@@ -811,6 +811,8 @@ struct SettingsView: View {
             SettingsSearchEntry(tab: .shelf, title: "Expanded drag detection area", keywords: ["shelf", "drag"], highlightID: SettingsTab.shelf.highlightID(for: "Expanded drag detection area")),
             SettingsSearchEntry(tab: .shelf, title: "Copy items on drag", keywords: ["shelf", "drag", "copy"], highlightID: SettingsTab.shelf.highlightID(for: "Copy items on drag")),
             SettingsSearchEntry(tab: .shelf, title: "Remove from shelf after dragging", keywords: ["shelf", "drag", "remove"], highlightID: SettingsTab.shelf.highlightID(for: "Remove from shelf after dragging")),
+            SettingsSearchEntry(tab: .shelf, title: "Save screenshots to shelf", keywords: ["shelf", "screenshot", "screen capture", "desktop"], highlightID: SettingsTab.shelf.highlightID(for: "Save screenshots to shelf")),
+            SettingsSearchEntry(tab: .shelf, title: "Show quick share tile in shelf", keywords: ["shelf", "share", "airdrop", "localsend", "tile"], highlightID: SettingsTab.shelf.highlightID(for: "Show quick share tile in shelf")),
             SettingsSearchEntry(tab: .shelf, title: "Quick Share Service", keywords: ["shelf", "share", "airdrop", "localsend"], highlightID: SettingsTab.shelf.highlightID(for: "Quick Share Service")),
             SettingsSearchEntry(tab: .shelf, title: "LocalSend Device Picker Style", keywords: ["localsend", "glass", "picker", "material"], highlightID: SettingsTab.shelf.highlightID(for: "Device Picker Style")),
 
@@ -3942,6 +3944,11 @@ struct Shelf: View {
                     Text("Remove from shelf after dragging")
                 }
                 .settingsHighlight(id: highlightID("Remove from shelf after dragging"))
+
+                Defaults.Toggle(key: .screenshotsToShelf) {
+                    Text("Save screenshots to shelf")
+                }
+                .settingsHighlight(id: highlightID("Save screenshots to shelf"))
             } header: {
                 HStack {
                     Text("General")
@@ -3949,6 +3956,11 @@ struct Shelf: View {
             }
 
             Section {
+                Defaults.Toggle(key: .showShelfQuickShareTile) {
+                    Text("Show quick share tile in shelf")
+                }
+                .settingsHighlight(id: highlightID("Show quick share tile in shelf"))
+
                 Picker("Quick Share Service", selection: $quickShareProvider) {
                     ForEach(quickShareService.availableProviders, id: \.id) { provider in
                         HStack {

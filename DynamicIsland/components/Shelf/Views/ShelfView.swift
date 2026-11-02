@@ -22,6 +22,7 @@
 
 import SwiftUI
 import AppKit
+import Defaults
 
 private struct ShelfBackgroundClickCatcher: NSViewRepresentable {
     let onClick: () -> Void
@@ -50,13 +51,16 @@ struct ShelfView: View {
     @StateObject var tvm = ShelfStateViewModel.shared
     @StateObject var selection = ShelfSelectionModel.shared
     @StateObject private var quickLookService = QuickLookService()
+    @Default(.showShelfQuickShareTile) private var showQuickShareTile
     private let spacing: CGFloat = 8
 
     var body: some View {
         HStack(spacing: 12) {
-            FileShareView()
-                .aspectRatio(1, contentMode: .fit)
-                .environmentObject(vm)
+            if showQuickShareTile {
+                FileShareView()
+                    .aspectRatio(1, contentMode: .fit)
+                    .environmentObject(vm)
+            }
             panel
                 .onDrop(of: [.fileURL, .url, .utf8PlainText, .plainText, .data], isTargeted: $vm.dragDetectorTargeting) { providers in
                     handleDrop(providers: providers)

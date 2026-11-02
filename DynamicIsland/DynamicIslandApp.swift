@@ -637,6 +637,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ScreenRecordingManager.shared.startMonitoring()
         }
 
+        // Setup screenshot redirection into the shelf
+        if !AppRuntimeEnvironment.isUITesting {
+            ScreenshotShelfService.shared.start()
+        }
+
         // Setup Do Not Disturb Manager
         if Defaults[.enableDoNotDisturbDetection] && !AppRuntimeEnvironment.isUITesting {
             dndManager.startMonitoring()

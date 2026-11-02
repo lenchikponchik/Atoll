@@ -237,8 +237,15 @@ private struct DraggableClickHandler<Content: View>: NSViewRepresentable {
         private let dragThreshold: CGFloat = 3.0
         private var draggedURLs: [URL] = []
         private var draggedItems: [ShelfItem] = []
+        private var draggedSourceURLs: [ShelfItem.ID: URL] = [:]
         private var didStartDragSession = false
         
+        // The island panel is usually not key; without this the first press only
+        // activates the window and the drag never starts
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+            true
+        }
+
         override func rightMouseDown(with event: NSEvent) {
             onRightClick?(event, self)
         }
@@ -339,21 +346,23 @@ private struct DraggableClickHandler<Content: View>: NSViewRepresentable {
             let pasteboardItem = NSPasteboardItem()
 
             switch item.kind {
-            case .file:
-                // Resolve bookmark on background thread with timeout for drag initiation
-                let semaphore = DispatchSemaphore(value: 0)
-                var resolvedURL: URL?
-                Task.detached { [item] in
-                    resolvedURL = await ShelfStateViewModel.shared.resolveAndUpdateBookmarkAsync(for: item)
-                    semaphore.signal()
+            case .file(let bookmarkData):
+                // Resolve synchronously: waiting on a semaphore for a MainActor-isolated
+                // resolver deadlocked the main thread until the timeout fired
+                let result = Bookmark(data: bookmarkData).resolve()
+                if let refreshed = result.refreshedData, refreshed != bookmarkData {
+                    DispatchQueue.main.async {
+                        ShelfStateViewModel.shared.updateBookmark(for: item, bookmark: refreshed)
+                    }
                 }
-                _ = semaphore.wait(timeout: .now() + 5.0)
-                
-                guard let url = resolvedURL else {
+
+                guard let url = result.url else {
                     pasteboardItem.setString(item.displayName, forType: .string)
                     return pasteboardItem
                 }
                 
+                draggedSourceURLs[item.id] = url
+
                 // Start accessing security-scoped resource and keep it active during drag
                 if url.startAccessingSecurityScopedResource() {
                     draggedURLs.append(url)
@@ -408,13 +417,19 @@ private struct DraggableClickHandler<Content: View>: NSViewRepresentable {
             }
             draggedURLs.removeAll()
 
-            // Auto-remove items from shelf if enabled and drag succeeded
-            if Defaults[.autoRemoveShelfItems] && !operation.isEmpty {
-                for item in draggedItems {
-                    ShelfStateViewModel.shared.remove(item)
+            if !operation.isEmpty {
+                // Screenshots always leave the shelf (and disk) once dragged out
+                let remainingItems = ScreenshotShelfService.shared.consumeDraggedScreenshots(draggedItems, sourceURLs: draggedSourceURLs)
+
+                // Auto-remove items from shelf if enabled and drag succeeded
+                if Defaults[.autoRemoveShelfItems] {
+                    for item in remainingItems {
+                        ShelfStateViewModel.shared.remove(item)
+                    }
                 }
             }
             draggedItems.removeAll()
+            draggedSourceURLs.removeAll()
         }
         
         func ignoreModifierKeys(for session: NSDraggingSession) -> Bool {
@@ -422,3 +437,4 @@ private struct DraggableClickHandler<Content: View>: NSViewRepresentable {
         }
     }
 }
+

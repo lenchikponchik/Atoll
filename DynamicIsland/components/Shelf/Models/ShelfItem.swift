@@ -289,15 +289,11 @@ private extension ShelfItem {
         return nil
     }
 
-    // Sync wrapper for backward compatibility
+    // Resolves directly: waiting on a semaphore for the MainActor-isolated async
+    // variant deadlocked the main thread until the timeout fired
     func resolvedContextSync(for bookmarkData: Data) -> (url: URL, bookmark: Data)? {
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: (url: URL, bookmark: Data)?
-        Task.detached {
-            result = await resolvedContext(for: bookmarkData)
-            semaphore.signal()
-        }
-        _ = semaphore.wait(timeout: .now() + 5.0)
-        return result
+        let result = Bookmark(data: bookmarkData).resolve()
+        guard let url = result.url else { return nil }
+        return (url, result.refreshedData ?? bookmarkData)
     }
 }
