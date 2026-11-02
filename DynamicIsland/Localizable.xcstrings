@@ -322,12 +322,52 @@
         }
       }
     },
+    "Adaptive Audio" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Адаптивный"
+          }
+        }
+      }
+    },
+    "Conversation Awareness" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Адаптация к разговору"
+          }
+        }
+      }
+    },
+    "Noise Cancellation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Шумоподавление"
+          }
+        }
+      }
+    },
     "Save screenshots to shelf" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранять скриншоты на полку"
+          }
+        }
+      }
+    },
+    "Transparency" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прозрачность"
           }
         }
       }

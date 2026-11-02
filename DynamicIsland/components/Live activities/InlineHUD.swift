@@ -117,13 +117,19 @@ struct InlineHUD: View {
     
     @State private var displayName: String = ""
 
+    static func listeningModeWingWidth(minimalistic: Bool) -> CGFloat {
+        minimalistic ? 128 : 160
+    }
+
     static func airPodsListeningModeWidth(
         closedNotchWidth: CGFloat,
         gestureProgress: CGFloat,
         minimalistic: Bool
     ) -> CGFloat {
-        let leadingWidth: CGFloat = minimalistic ? 36 : 44
-        let trailingWidth: CGFloat = minimalistic ? 136 : 180
+        // Wings are symmetric: the HUD is centered as a whole, so uneven wings
+        // shift the black center off the physical notch and hide text under it
+        let leadingWidth: CGFloat = listeningModeWingWidth(minimalistic: minimalistic)
+        let trailingWidth: CGFloat = listeningModeWingWidth(minimalistic: minimalistic)
         let centerWidth = max(closedNotchWidth - 20, 0)
         return leadingWidth + gestureProgress / 2 + centerWidth + trailingWidth + gestureProgress / 2
     }
@@ -143,7 +149,7 @@ struct InlineHUD: View {
         let baseInfoWidth: CGFloat = {
             if type == .bluetoothAudio {
                 if isListeningModeEvent {
-                    return enableMinimalisticUI ? 36 : 44
+                    return Self.listeningModeWingWidth(minimalistic: enableMinimalisticUI)
                 }
                 if showBluetoothDeviceNameMarquee {
                     return enableMinimalisticUI ? 96 : 132
@@ -163,7 +169,7 @@ struct InlineHUD: View {
             let minimum: CGFloat = {
                 if type == .bluetoothAudio {
                     if isListeningModeEvent {
-                        return enableMinimalisticUI ? 32 : 38
+                        return Self.listeningModeWingWidth(minimalistic: enableMinimalisticUI) - 8
                     }
                     if showBluetoothDeviceNameMarquee {
                         return enableMinimalisticUI ? 84 : 112
@@ -184,7 +190,7 @@ struct InlineHUD: View {
             if type == .bluetoothAudio {
                 if !hasBatteryLevel {
                     if isListeningModeEvent {
-                        return enableMinimalisticUI ? 136 : 180
+                        return Self.listeningModeWingWidth(minimalistic: enableMinimalisticUI)
                     }
                     return showBluetoothDeviceNameMarquee ? (enableMinimalisticUI ? 88 : 110) : (enableMinimalisticUI ? 66 : 80)
                 }
@@ -212,7 +218,7 @@ struct InlineHUD: View {
                 if type == .bluetoothAudio {
                     if !hasBatteryLevel {
                         if isListeningModeEvent {
-                            return enableMinimalisticUI ? 128 : 172
+                            return Self.listeningModeWingWidth(minimalistic: enableMinimalisticUI) - 8
                         }
                         return showBluetoothDeviceNameMarquee ? (enableMinimalisticUI ? 80 : 102) : (enableMinimalisticUI ? 56 : 80)
                     }
