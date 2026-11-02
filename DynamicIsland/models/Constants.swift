@@ -835,6 +835,8 @@ extension Defaults.Keys {
     static let updateChannel = Key<UpdateChannel>("updateChannel", default: .stable)
     static let logLevel = Key<LogLevel>("logLevel", default: .none)
     static let menubarIcon = Key<Bool>("menubarIcon", default: true)
+    /// Set once launch at login has been turned on by default, so a later opt-out sticks.
+    static let didApplyDefaultLaunchAtLogin = Key<Bool>("didApplyDefaultLaunchAtLogin", default: false)
     static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)
     static let automaticallySwitchDisplay = Key<Bool>("automaticallySwitchDisplay", default: true)
     static let releaseName = Key<String>("releaseName", default: "Kaafu")

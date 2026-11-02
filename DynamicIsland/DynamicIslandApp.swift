@@ -20,6 +20,7 @@ import AVFoundation
 import Combine
 import Defaults
 import KeyboardShortcuts
+import LaunchAtLogin
 import Sparkle
 import SwiftUI
 import SkyLightWindow
@@ -635,6 +636,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Setup ScreenRecording Manager
         if Defaults[.enableScreenRecordingDetection] && !AppRuntimeEnvironment.isUITesting {
             ScreenRecordingManager.shared.startMonitoring()
+        }
+
+        // Start at login by default; applied once so turning it off in Settings sticks
+        if !Defaults[.didApplyDefaultLaunchAtLogin] && !AppRuntimeEnvironment.isUITesting {
+            LaunchAtLogin.isEnabled = true
+            Defaults[.didApplyDefaultLaunchAtLogin] = true
         }
 
         // Setup screenshot redirection into the shelf
