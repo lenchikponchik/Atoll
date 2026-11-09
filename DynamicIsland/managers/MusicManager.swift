@@ -481,12 +481,41 @@ class MusicManager: ObservableObject {
     ]
 
     var hasActiveSession: Bool {
+        Self.isActiveSession(isPlaying: isPlaying, title: songTitle, artist: artistName)
+    }
+
+    private static func isActiveSession(isPlaying: Bool, title: String, artist: String) -> Bool {
         if isPlaying { return true }
-        let trimmedTitle = songTitle.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let trimmedArtist = artistName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trimmedArtist = artist.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let hasRealTitle = !trimmedTitle.isEmpty && !Self.placeholderTitles.contains(trimmedTitle)
         let hasRealArtist = !trimmedArtist.isEmpty && !Self.placeholderArtists.contains(trimmedArtist)
         return hasRealTitle || hasRealArtist
+    }
+
+    /// `hasActiveSession` that stays true for a few seconds after the session drops.
+    /// Players like Yandex Music briefly report no track while switching songs; views that
+    /// swap the player for something else (the calendar) use this so nothing flashes in.
+    /// Updated synchronously when the track fields change, before any view re-renders.
+    @Published private(set) var hasDisplayableSession = false
+    private var sessionLossGraceWorkItem: DispatchWorkItem?
+    private static let sessionLossGracePeriod: TimeInterval = 3
+
+    private func updateDisplayableSession(isActive: Bool) {
+        if isActive {
+            sessionLossGraceWorkItem?.cancel()
+            sessionLossGraceWorkItem = nil
+            if !hasDisplayableSession { hasDisplayableSession = true }
+            return
+        }
+        guard hasDisplayableSession, sessionLossGraceWorkItem == nil else { return }
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.sessionLossGraceWorkItem = nil
+            if !self.hasActiveSession { self.hasDisplayableSession = false }
+        }
+        sessionLossGraceWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.sessionLossGracePeriod, execute: workItem)
     }
 
     @Published var animations: DynamicIslandAnimations = .init()
@@ -562,6 +591,13 @@ class MusicManager: ObservableObject {
 
     // MARK: - Initialization
     init() {
+        // @Published emits on willSet with the new values, so this runs before views re-render.
+        Publishers.CombineLatest3($isPlaying, $songTitle, $artistName)
+            .sink { [weak self] playing, title, artist in
+                self?.updateDisplayableSession(isActive: Self.isActiveSession(isPlaying: playing, title: title, artist: artist))
+            }
+            .store(in: &cancellables)
+
         // Listen for changes to the default controller preference
         NotificationCenter.default.publisher(for: Notification.Name.mediaControllerChanged)
             .sink { [weak self] _ in
