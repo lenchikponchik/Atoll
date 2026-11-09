@@ -1838,9 +1838,10 @@ class BluetoothAudioManager: ObservableObject {
             guard let self, !Task.isCancelled else { return }
 
             await MainActor.run {
+                // No ioreg fallback: `ioreg -r -l` without a class prints nothing, and
+                // spawning it here blocked the main thread for hundreds of ms per event.
                 guard let device = self.primaryConnectedAirPodsDevice(),
-                      let mode = self.readListeningModeViaDynamicSelectors(for: device) ??
-                        Self.readListeningModeFromIORegistry() else {
+                      let mode = self.readListeningModeViaDynamicSelectors(for: device) else {
                     return
                 }
 
@@ -1974,43 +1975,6 @@ class BluetoothAudioManager: ObservableObject {
         }
     }
 
-    private static func readListeningModeFromIORegistry() -> AirPodsListeningMode? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/ioreg")
-        process.arguments = ["-r", "-l", "-w", "0"]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-
-        do {
-            try process.run()
-        } catch {
-            return nil
-        }
-
-        process.waitUntilExit()
-
-        guard process.terminationStatus == 0 else { return nil }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8) else { return nil }
-
-        let interestingLines = output
-            .components(separatedBy: .newlines)
-            .filter {
-                let lowercased = $0.lowercased()
-                return lowercased.contains("airpods") ||
-                    lowercased.contains("listening") ||
-                    lowercased.contains("noise") ||
-                    lowercased.contains("transparency") ||
-                    lowercased.contains("adaptive") ||
-                    lowercased.contains("conversation")
-            }
-
-        return AirPodsListeningMode.from(interestingLines.joined(separator: "\n"))
-    }
-    
     // MARK: - Cleanup
     
     private func cleanup() {
