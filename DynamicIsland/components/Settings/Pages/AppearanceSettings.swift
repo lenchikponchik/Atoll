@@ -125,6 +125,8 @@ struct Appearance: View {
                         Text(style.localizedName).tag(style)
                     }
                 }
+                // Segments instead of a pop-up menu: the menu was closing before a choice registered.
+                .pickerStyle(.segmented)
                 .settingsHighlight(id: highlightID("Island style"))
                 Text("Glass styles apply to the opened island; the closed island stays black so it blends with the notch.")
                     .font(.caption)
