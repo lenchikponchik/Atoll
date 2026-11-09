@@ -77,11 +77,6 @@ struct TabSelectionView: View {
             tabsArray.append(TabModel(label: "Timer", icon: "timer", view: .timer))
         }
 
-        // Stats tab only shown when stats feature is enabled
-        if Defaults[.enableStatsFeature] {
-            tabsArray.append(TabModel(label: "Stats", icon: "chart.xyaxis.line", view: .stats))
-        }
-
         if Defaults[.enableNotes] || (Defaults[.enableClipboardManager] && Defaults[.clipboardDisplayMode] == .separateTab) {
             let label = Defaults[.enableNotes] ? "Notes" : "Clipboard"
             let icon = Defaults[.enableNotes] ? "note.text" : "doc.on.clipboard"
@@ -90,6 +85,10 @@ struct TabSelectionView: View {
         // AI usage tab (Claude, Codex/GPT, Cursor) sits last, where the terminal used to be
         if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
             tabsArray.append(TabModel(label: "AI", icon: "sparkles", view: .llmUsage))
+        }
+        // System load (CPU, memory, GPU) right after the AI tab
+        if Defaults[.enableStatsFeature] {
+            tabsArray.append(TabModel(label: "Stats", icon: "chart.xyaxis.line", view: .stats))
         }
         if extensionTabsEnabled {
             for payload in extensionTabPayloads {
