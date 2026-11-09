@@ -322,12 +322,32 @@
         }
       }
     },
+    "5 hours" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 часов"
+          }
+        }
+      }
+    },
     "Adaptive Audio" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Адаптивный"
+          }
+        }
+      }
+    },
+    "Claude Code sign-in expired: run claude and /login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход в Claude Code истёк: запусти claude и выполни /login"
           }
         }
       }
@@ -342,12 +362,112 @@
         }
       }
     },
+    "Cursor Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модели Cursor"
+          }
+        }
+      }
+    },
+    "Day" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "День"
+          }
+        }
+      }
+    },
+    "Estimated API-equivalent cost from local token counts (cache reads and writes priced at the provider's cache rates), not your subscription bill." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примерная стоимость тех же токенов по ценам API (кеш считается по ценам кеша), а не счёт за подписку."
+          }
+        }
+      }
+    },
+    "Estimated API-equivalent cost from local token counts (not your subscription bill). Some models used do not have usable pricing, so this is partial or unavailable." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примерная стоимость тех же токенов по ценам API, а не счёт за подписку. Для части моделей цены нет, поэтому сумма неполная или недоступна."
+          }
+        }
+      }
+    },
+    "Gemini CLI sign-in expired: run gemini" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход в Gemini CLI истёк: запусти gemini"
+          }
+        }
+      }
+    },
+    "Month" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Месяц"
+          }
+        }
+      }
+    },
+    "No AI tools found on this Mac. Install Claude Code, Codex, Gemini CLI, Cursor or Antigravity and they will appear here." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На этом Mac не найдено ИИ-инструментов. Установи Claude Code, Codex, Gemini CLI, Cursor или Antigravity — и они появятся здесь."
+          }
+        }
+      }
+    },
     "Noise Cancellation" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Шумоподавление"
+          }
+        }
+      }
+    },
+    "Only AI tools installed on this Mac are listed. The AI tab is hidden when none are found." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показаны только ИИ-инструменты, установленные на этом Mac. Если их нет, вкладка ИИ скрыта."
+          }
+        }
+      }
+    },
+    "Open Antigravity to see its limits" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открой Antigravity, чтобы увидеть лимиты"
+          }
+        }
+      }
+    },
+    "Other Models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Другие модели"
           }
         }
       }
@@ -362,12 +482,102 @@
         }
       }
     },
+    "Session" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сессия"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодня"
+          }
+        }
+      }
+    },
     "Transparency" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прозрачность"
+          }
+        }
+      }
+    },
+    "Week" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неделя"
+          }
+        }
+      }
+    },
+    "d" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "д"
+          }
+        }
+      }
+    },
+    "est. n/a" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "оценка н/д"
+          }
+        }
+      }
+    },
+    "h" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ч"
+          }
+        }
+      }
+    },
+    "left" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "осталось"
+          }
+        }
+      }
+    },
+    "resets in" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "сброс через"
+          }
+        }
+      }
+    },
+    "used" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "использовано"
           }
         }
       }
@@ -26015,7 +26225,14 @@
       }
     },
     "Enable LLM Usage Monitor" : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лимиты нейросетей"
+          }
+        }
+      }
     },
     "Enable lock screen live activity" : {
       "localizations" : {
@@ -35700,7 +35917,14 @@
       }
     },
     "LLM Providers" : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нейросети"
+          }
+        }
+      }
     },
     "Load 1m" : {
       "localizations" : {
@@ -49200,7 +49424,15 @@
     },
     "quota unavailable" : {
       "comment" : "A label displayed when a user's quota is unavailable.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "лимиты недоступны"
+          }
+        }
+      }
     },
     "R " : {
       "comment" : "Label for the read data in the disk usage graph.",

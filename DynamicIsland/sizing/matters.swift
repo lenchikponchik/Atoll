@@ -88,7 +88,7 @@ func enabledStandardTabCount() -> Int {
     }
 
     // AI usage tab
-    if Defaults[.enableLLMUsageFeature] {
+    if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
         count += 1
     }
 

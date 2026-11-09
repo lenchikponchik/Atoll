@@ -88,7 +88,7 @@ struct TabSelectionView: View {
             tabsArray.append(TabModel(label: label, icon: icon, view: .notes))
         }
         // AI usage tab (Claude, Codex/GPT, Cursor) sits last, where the terminal used to be
-        if Defaults[.enableLLMUsageFeature] {
+        if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
             tabsArray.append(TabModel(label: "AI", icon: "sparkles", view: .llmUsage))
         }
         if extensionTabsEnabled {

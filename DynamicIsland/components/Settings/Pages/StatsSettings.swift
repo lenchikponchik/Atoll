@@ -95,24 +95,22 @@ struct StatsSettings: View {
 
             if enableLLMUsageFeature {
                 Section {
-                    Defaults.Toggle(key: .enableClaudeProvider) {
-                        Text("Claude")
+                    let installed = ProviderID.allCases.filter(\.isInstalled)
+                    if installed.isEmpty {
+                        Text("No AI tools found on this Mac. Install Claude Code, Codex, Gemini CLI, Cursor or Antigravity and they will appear here.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .settingsHighlight(id: highlightID("Claude Provider"))
-
-                    Defaults.Toggle(key: .enableCodexProvider) {
-                        Text("Codex")
+                    ForEach(installed) { provider in
+                        Defaults.Toggle(key: provider.enabledKey) {
+                            Text(provider.displayName)
+                        }
+                        .settingsHighlight(id: highlightID("\(provider.displayName) Provider"))
                     }
-                    .settingsHighlight(id: highlightID("Codex Provider"))
-
-                    Defaults.Toggle(key: .enableCursorProvider) {
-                        Text("Cursor")
-                    }
-                    .settingsHighlight(id: highlightID("Cursor Provider"))
                 } header: {
                     Text("LLM Providers")
                 } footer: {
-                    Text("Choose which AI providers appear in the Usage tab.")
+                    Text("Only AI tools installed on this Mac are listed. The AI tab is hidden when none are found.")
                         .multilineTextAlignment(.trailing)
                         .foregroundStyle(.secondary)
                         .font(.caption)

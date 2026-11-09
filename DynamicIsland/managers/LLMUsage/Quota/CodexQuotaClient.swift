@@ -19,6 +19,7 @@ struct CodexQuotaClient {
         let usedPercent: Double
         let resetAt: Double?
         let resetAfterSeconds: Double?
+        let limitWindowSeconds: Double?
     }
 
     private struct RateLimit: Decodable {
@@ -72,7 +73,7 @@ struct CodexQuotaClient {
 
     private func limit(from window: RateLimitWindow, now: Date) -> UsageLimit {
         let resets = window.resetAt.map { Date(timeIntervalSince1970: $0) } ?? window.resetAfterSeconds.map { now.addingTimeInterval($0) }
-        return UsageLimit(used: window.usedPercent, limit: 100, resetsAt: resets)
+        return UsageLimit(used: window.usedPercent, limit: 100, resetsAt: resets, windowSeconds: window.limitWindowSeconds)
     }
 
     private func headerFallback(_ http: HTTPURLResponse, key: String) -> UsageLimit? {

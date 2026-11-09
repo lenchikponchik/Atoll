@@ -17,11 +17,11 @@ final class LLMUsageManager: ObservableObject {
         self.injectedProviders = providers
     }
 
-    private static let allProviders: [UsageProvider] = [ClaudeUsageProvider(), CodexUsageProvider(), CursorUsageProvider()]
+    private static let allProviders: [UsageProvider] = [ClaudeUsageProvider(), CodexUsageProvider(), GeminiUsageProvider(), CursorUsageProvider(), AntigravityUsageProvider()]
 
     private var enabledProviders: [UsageProvider] {
         if let injectedProviders { return injectedProviders }
-        return Self.allProviders.filter { Defaults[$0.id.enabledKey] }
+        return Self.allProviders.filter { $0.id.isAvailable }
     }
 
     func refreshAll(force: Bool = false) {
