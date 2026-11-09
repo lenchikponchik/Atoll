@@ -115,8 +115,24 @@ struct Appearance: View {
         )
     }
 
+    @Default(.islandBackgroundStyle) private var islandBackgroundStyle
+
     var body: some View {
         Form {
+            Section {
+                Picker("Island style", selection: $islandBackgroundStyle) {
+                    ForEach(IslandBackgroundStyle.allCases) { style in
+                        Text(style.localizedName).tag(style)
+                    }
+                }
+                .settingsHighlight(id: highlightID("Island style"))
+                Text("Glass styles apply to the opened island; the closed island stays black so it blends with the notch.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Island style")
+            }
+
             Section {
                 Toggle("Always show tabs", isOn: $coordinator.alwaysShowTabs)
                 Defaults.Toggle(key: .settingsIconInNotch) {

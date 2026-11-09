@@ -342,6 +342,16 @@
         }
       }
     },
+    "Black" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чёрный"
+          }
+        }
+      }
+    },
     "Claude Code sign-in expired: run claude and /login" : {
       "localizations" : {
         "ru" : {
@@ -408,6 +418,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вход в Gemini CLI истёк: запусти gemini"
+          }
+        }
+      }
+    },
+    "Glass styles apply to the opened island; the closed island stays black so it blends with the notch." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стекло применяется к раскрытому острову; закрытый остаётся чёрным, чтобы сливаться с вырезом."
+          }
+        }
+      }
+    },
+    "Island style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стиль острова"
           }
         }
       }

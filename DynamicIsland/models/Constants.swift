@@ -1236,6 +1236,7 @@ extension Defaults.Keys {
     static let enableOSDBrightness = Key<Bool>("enableOSDBrightness", default: true)
     static let enableOSDKeyboardBacklight = Key<Bool>("enableOSDKeyboardBacklight", default: true)
     static let osdMaterial = Key<OSDMaterial>("osdMaterial", default: .frosted)
+    static let islandBackgroundStyle = Key<IslandBackgroundStyle>("islandBackgroundStyle", default: .black)
     static let osdLiquidGlassCustomizationMode = Key<LockScreenGlassCustomizationMode>(
         "osdLiquidGlassCustomizationMode",
         default: .standard

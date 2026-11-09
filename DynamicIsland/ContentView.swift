@@ -83,6 +83,7 @@ struct ContentView: View {
     @Default(.showStandardMediaControls) var showStandardMediaControls
     @Default(.externalDisplayStyle) var externalDisplayStyle
     @Default(.hideNonNotchUntilHover) var hideNonNotchUntilHover
+    @Default(.islandBackgroundStyle) var islandBackgroundStyle
     
     // Battery settings reactivity
     @Default(.showPowerStatusNotifications) var showPowerStatusNotifications
@@ -511,12 +512,58 @@ struct ContentView: View {
         installRootLifecycleHandlers(on: rootBodyView)
     }
 
+    /// Glass only while open: closed, the island has to stay black to blend with the notch.
+    private var showsGlassBackground: Bool {
+        islandBackgroundStyle.isGlass && vm.notchState == .open
+    }
+
+    @ViewBuilder
+    private var islandBackground: some View {
+        ZStack(alignment: .top) {
+            if showsGlassBackground {
+                glassMaterial
+                // Light dimming only: enough for white text on bright wallpapers while the
+                // glass stays see-through like the Dock.
+                Color.black.opacity(islandBackgroundStyle == .liquidGlass ? 0.12 : 0.22)
+                // Black behind the physical notch, fading out softly over the header row.
+                if !isDynamicIslandMode {
+                    let bandHeight = max(vm.effectiveClosedNotchHeight, 24)
+                    LinearGradient(
+                        stops: [
+                            .init(color: .black, location: 0),
+                            .init(color: .black, location: 0.3),
+                            .init(color: .black.opacity(0.55), location: 0.6),
+                            .init(color: .black.opacity(0), location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: bandHeight * 2.6)
+                }
+            }
+            Color.black.opacity(showsGlassBackground ? 0 : 1)
+        }
+        .animation(.easeInOut(duration: 0.3), value: showsGlassBackground)
+    }
+
+    @ViewBuilder
+    private var glassMaterial: some View {
+        if islandBackgroundStyle == .liquidGlass, #available(macOS 26.0, *) {
+            Rectangle()
+                .fill(.clear)
+                // Clear system Liquid Glass, the see-through variant the Dock uses.
+                .glassEffect(.clear, in: .rect)
+        } else {
+            Rectangle().fill(.ultraThinMaterial)
+        }
+    }
+
     private var mainLayoutBase: some View {
         NotchLayout()
             .frame(alignment: .top)
             .padding(.horizontal, notchHorizontalPadding)
             .padding([.horizontal, .bottom], vm.notchState == .open ? 12 : 0)
-            .background(.black)
+            .background { islandBackground }
             .clipShape(resolvedClipShape)
             .compositingGroup()
             .shadow(

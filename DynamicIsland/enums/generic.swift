@@ -161,6 +161,26 @@ enum SliderColorEnum: String, CaseIterable, Defaults.Serializable {
     }
 }
 
+/// Background of the opened island. The closed island always stays black so it
+/// blends with the physical notch.
+enum IslandBackgroundStyle: String, CaseIterable, Defaults.Serializable, Identifiable {
+    case black = "Black"
+    case liquidGlass = "Liquid Glass"
+    case frosted = "Frosted Glass"
+
+    var id: String { rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .black: return String(localized: "Black")
+        case .liquidGlass: return String(localized: "Liquid Glass")
+        case .frosted: return String(localized: "Frosted Glass")
+        }
+    }
+
+    var isGlass: Bool { self != .black }
+}
+
 enum LockScreenGlassStyle: String, CaseIterable, Defaults.Serializable, Identifiable {
     case liquid = "Liquid Glass"
     case frosted = "Frosted Glass"
