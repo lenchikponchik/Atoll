@@ -1095,7 +1095,7 @@ extension Defaults.Keys {
     
     // MARK: Stats Feature
     static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
-    static let enableLLMUsageFeature = Key<Bool>("enableLLMUsageFeature", default: false)
+    static let enableLLMUsageFeature = Key<Bool>("enableLLMUsageFeature", default: true)
     static let enableClaudeProvider = Key<Bool>("enableClaudeProvider", default: true)
     static let enableCodexProvider = Key<Bool>("enableCodexProvider", default: true)
     static let enableCursorProvider = Key<Bool>("enableCursorProvider", default: true)
@@ -1109,22 +1109,6 @@ extension Defaults.Keys {
     static let showDiskGraph = Key<Bool>("showDiskGraph", default: false)
     static let cpuTemperatureUnit = Key<LockScreenWeatherTemperatureUnit>("cpuTemperatureUnit", default: .celsius)
     
-    // MARK: Terminal Feature
-    static let enableTerminalFeature = Key<Bool>("enableTerminalFeature", default: false)
-    static let terminalShellPath = Key<String>("terminalShellPath", default: "/bin/zsh")
-    static let terminalFontFamily = Key<String>("terminalFontFamily", default: "")
-    static let terminalFontSize = Key<Double>("terminalFontSize", default: 12.0)
-    static let terminalOpacity = Key<Double>("terminalOpacity", default: 1.0)
-    static let terminalMaxHeightFraction = Key<Double>("terminalMaxHeightFraction", default: 0.4)
-    static let terminalCursorStyle = Key<String>("terminalCursorStyle", default: "blinkBlock")
-    static let terminalScrollbackLines = Key<Int>("terminalScrollbackLines", default: 1000)
-    static let terminalOptionAsMeta = Key<Bool>("terminalOptionAsMeta", default: true)
-    static let terminalMouseReporting = Key<Bool>("terminalMouseReporting", default: true)
-    static let terminalBoldAsBright = Key<Bool>("terminalBoldAsBright", default: true)
-    static let terminalBackgroundColor = Key<Color>("terminalBackgroundColor", default: .black)
-    static let terminalForegroundColor = Key<Color>("terminalForegroundColor", default: .white)
-    static let terminalCursorColor = Key<Color>("terminalCursorColor", default: Color(.selectedControlColor))
-    static let terminalStickyMode = Key<Bool>("terminalStickyMode", default: false)
     
     // MARK: Timer Feature
     static let enableTimerFeature = Key<Bool>("enableTimerFeature", default: true)

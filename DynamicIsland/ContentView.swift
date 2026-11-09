@@ -83,7 +83,6 @@ struct ContentView: View {
     @Default(.showStandardMediaControls) var showStandardMediaControls
     @Default(.externalDisplayStyle) var externalDisplayStyle
     @Default(.hideNonNotchUntilHover) var hideNonNotchUntilHover
-    @Default(.terminalStickyMode) var terminalStickyMode
     
     // Battery settings reactivity
     @Default(.showPowerStatusNotifications) var showPowerStatusNotifications
@@ -167,14 +166,6 @@ struct ContentView: View {
             return CGSize(width: baseSize.width, height: resolvedHeight)
         }
 
-        if coordinator.currentView == .terminal {
-            // Dynamic height: up to terminalMaxHeightFraction of screen, min 300pt
-            let screenHeight = NSScreen.main?.visibleFrame.height ?? 800
-            let maxFraction = Defaults[.terminalMaxHeightFraction]
-            let terminalHeight = min(screenHeight * maxFraction, max(300, screenHeight * maxFraction))
-            return CGSize(width: baseSize.width, height: terminalHeight)
-        }
-
         if coordinator.currentView == .extensionExperience {
             if let preferredHeight = extensionTabPreferredHeight(baseSize: baseSize) {
                 return CGSize(width: baseSize.width, height: preferredHeight)
@@ -208,7 +199,6 @@ struct ContentView: View {
     @State private var lastHapticTime: Date = Date()
     @State private var hoverClickMonitor: Any?
     @State private var hoverClickLocalMonitor: Any?
-    @State private var stickyTerminalClickMonitor: Any?
     @State private var hiddenEdgeHoverPollingTask: Task<Void, Never>?
     @State private var isHoveringClosedMusicWaveformControl: Bool = false
 
@@ -636,14 +626,6 @@ struct ContentView: View {
                 if newState != .closed {
                     isHoveringClosedMusicWaveformControl = false
                 }
-                if newState == .closed {
-                    removeStickyTerminalClickMonitor()
-                } else {
-                    // Install the outside-click monitor for terminal opens that don't
-                    // change `currentView` (e.g. shortcut re-opening with the terminal
-                    // tab already selected, where the cursor never enters the notch).
-                    syncStickyTerminalOutsideClickMonitor()
-                }
                 #if os(macOS)
                 if newState == .open {
                     TimerControlWindowManager.shared.hide()
@@ -697,7 +679,6 @@ struct ContentView: View {
                         currentView: currentViewString
                     )
                 }
-                syncStickyTerminalOutsideClickMonitor()
             }
             .sensoryFeedback(.alignment, trigger: haptics)
             .contextMenu {
@@ -756,9 +737,6 @@ struct ContentView: View {
                 // Deterministic teardown for borderless panels (`.onDisappear` is
                 // unreliable); the window-cleanup path calls this before closing.
                 vm.onViewTeardown = { performViewTeardown() }
-            }
-            .onChange(of: terminalStickyMode) { _, _ in
-                syncStickyTerminalOutsideClickMonitor()
             }
             .onChange(of: vm.notchState) { _, state in
                 if state == .open {
@@ -1099,8 +1077,6 @@ struct ContentView: View {
                                 NotchNotesView()
                             case .clipboard:
                                 NotchNotesView()
-                            case .terminal:
-                                NotchTerminalView()
                             case .extensionExperience:
                                 if let payload = currentExtensionTabPayload() {
                                     ExtensionNotchExperienceTabView(payload: payload)
@@ -1940,7 +1916,6 @@ struct ContentView: View {
     private func performViewTeardown() {
         hoverTask?.cancel()
         stopHoverClickMonitor()
-        removeStickyTerminalClickMonitor()
         stopHiddenEdgeHoverPolling()
         cancelMusicControlWindowSync()
         hideMusicControlWindow()
@@ -2020,46 +1995,6 @@ struct ContentView: View {
         }
     }
 
-    /// Installs the global outside-click monitor whenever the Terminal tab is open
-    /// (e.g. keyboard-opened terminal), regardless of sticky mode.
-    ///
-    /// Sticky mode only controls whether the terminal closes when the cursor leaves
-    /// the notch (see `shouldPreventAutoClose`).  An outside click should always close
-    /// the terminal — this covers the case where the terminal is opened via the
-    /// shortcut and the cursor never enters the notch, so there's no hover-out event
-    /// to trigger the normal auto-close.
-    ///
-    /// While the cursor is hovering inside the notch, hover handling owns close
-    /// behavior, so the monitor is not installed; it is re-synced on hover-out.
-    private func syncStickyTerminalOutsideClickMonitor() {
-        guard vm.notchState == .open, coordinator.currentView == .terminal, !isHovering else {
-            removeStickyTerminalClickMonitor()
-            return
-        }
-        installStickyTerminalClickMonitor()
-    }
-
-    private func installStickyTerminalClickMonitor() {
-        guard stickyTerminalClickMonitor == nil else { return }
-        stickyTerminalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown]) { [weak vm] _ in
-            Task { @MainActor in
-                guard let vm, vm.notchState == .open else { return }
-                let clickLocation = NSEvent.mouseLocation
-                if self.isPointInsideNotchWindow(clickLocation) {
-                    return
-                }
-                vm.close()
-            }
-        }
-    }
-
-    private func removeStickyTerminalClickMonitor() {
-        if let stickyTerminalClickMonitor {
-            NSEvent.removeMonitor(stickyTerminalClickMonitor)
-            self.stickyTerminalClickMonitor = nil
-        }
-    }
-
     // MARK: - Hover Management
     
     /// Handle hover state changes with debouncing
@@ -2068,7 +2003,6 @@ struct ContentView: View {
 
         if hovering {
             startHoverClickMonitor()
-            removeStickyTerminalClickMonitor()
         } else {
             stopHoverClickMonitor()
             if isHoveringClosedMusicWaveformControl {
@@ -2123,31 +2057,12 @@ struct ContentView: View {
 
                     if self.vm.notchState == .open && !self.shouldPreventAutoClose() {
                         self.vm.close()
-                    } else if self.vm.notchState == .open
-                                && Defaults[.terminalStickyMode]
-                                && self.coordinator.currentView == .terminal {
-                        // Re-sync monitor state through one code path to avoid
-                        // monitor lifecycle races between hover and state updates.
-                        self.syncStickyTerminalOutsideClickMonitor()
                     }
                 }
             }
         }
     }
 
-    private func isPointInsideNotchWindow(_ point: CGPoint) -> Bool {
-        if let appDelegate = AppDelegate.shared {
-            if Defaults[.showOnAllDisplays] {
-                return appDelegate.windows.values.contains(where: { $0.frame.contains(point) })
-            }
-            if let window = appDelegate.window {
-                return window.frame.contains(point)
-            }
-        }
-
-        return NSApp.windows.contains(where: { $0.frame.contains(point) })
-    }
-    
     // Helper function to check if any popovers are active
     private func hasAnyActivePopovers() -> Bool {
      return vm.isBatteryPopoverActive || 
@@ -2160,7 +2075,7 @@ struct ContentView: View {
     }
 
     private func shouldPreventAutoClose() -> Bool {
-        coordinator.firstLaunch || hasAnyActivePopovers() || vm.isAutoCloseSuppressed || SharingStateManager.shared.preventNotchClose || (Defaults[.terminalStickyMode] && coordinator.currentView == .terminal)
+        coordinator.firstLaunch || hasAnyActivePopovers() || vm.isAutoCloseSuppressed || SharingStateManager.shared.preventNotchClose
     }
     
     // Helper to prevent rapid haptic feedback
