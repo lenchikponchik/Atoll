@@ -58,7 +58,8 @@ class SettingsWindowController: NSWindowController {
         window.titlebarAppearsTransparent = false
         window.titleVisibility = .visible
         window.toolbarStyle = .unified
-        window.isMovableByWindowBackground = true
+        // Dragging by the background swallowed clicks on sidebar rows and controls.
+        window.isMovableByWindowBackground = false
         window.level = .normal
         
         // Make it behave like a regular app window with proper Spaces support
@@ -74,7 +75,9 @@ class SettingsWindowController: NSWindowController {
         
         // Create the SwiftUI content
         let settingsView = SettingsView(updaterController: updaterController)
-        let hostingView = NSHostingView(rootView: settingsView)
+        // Accept the first click even when Atoll is not the active app, so a click on a
+        // section or control works right away instead of only activating the window.
+        let hostingView = FirstMouseHostingView(rootView: settingsView)
         window.contentView = hostingView
         
         // Handle window closing

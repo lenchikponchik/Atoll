@@ -354,25 +354,11 @@ struct SettingsView: View {
                 selectedTab = firstMatch
             }
         }
+        // Plain window background: a full-window interactive Liquid Glass layer made the
+        // whole settings window re-render the desktop behind it on every scroll and hover.
         .background {
-            Group {
-                if #available(macOS 26.0, *) {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .glassEffect(
-                            .clear
-                                .tint(Color.white.opacity(0.1))
-                                .interactive(),
-                            in: .rect(cornerRadius: 18)
-                        )
-                } else {
-                    ZStack {
-                        Color(NSColor.windowBackgroundColor)
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                    }
-                }
-            }
-            .ignoresSafeArea()
+            Color(NSColor.windowBackgroundColor)
+                .ignoresSafeArea()
         }
     }
 
