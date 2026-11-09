@@ -145,8 +145,9 @@ extension SettingsWindowController: NSWindowDelegate {
     }
     
     func windowDidBecomeKey(_ notification: Notification) {
-        // Ensure app is in regular mode when window becomes key
-        NSApp.setActivationPolicy(.regular)
+        // Atoll stays an accessory app while Settings is open. Switching it to .regular
+        // here made macOS 27 hand key focus to the pop-up menu's glass window, so every
+        // pop-up menu in Settings closed right after opening.
     }
     
     func windowDidResignKey(_ notification: Notification) {
