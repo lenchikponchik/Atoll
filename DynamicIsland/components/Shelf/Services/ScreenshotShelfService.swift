@@ -175,8 +175,24 @@ final class ScreenshotShelfService {
         source.resume()
         self.source = source
 
-        // Pick up screenshots taken while Atoll was not running
+        // Pick up screenshots taken while Atoll was not running. Older files were already
+        // offered (and may have been removed from the shelf); treat them as known so a
+        // relaunch or reboot does not put every leftover file back on the shelf.
+        markFilesKnown(createdBefore: Defaults[.screenshotShelfLastScanDate] ?? Date())
         scan()
+    }
+
+    private func markFilesKnown(createdBefore cutoff: Date) {
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: Self.directory,
+            includingPropertiesForKeys: [.creationDateKey],
+            options: [.skipsHiddenFiles]
+        )) ?? []
+        for file in files {
+            let created = (try? file.resourceValues(forKeys: [.creationDateKey]))?.creationDate
+            if let created, created > cutoff { continue }
+            knownFiles.insert(file.lastPathComponent)
+        }
     }
 
     private func stopWatching() {
@@ -192,6 +208,8 @@ final class ScreenshotShelfService {
             includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles]
         )) ?? []
+
+        Defaults[.screenshotShelfLastScanDate] = Date()
 
         let names = Set(files.map(\.lastPathComponent))
         knownFiles.formIntersection(names)

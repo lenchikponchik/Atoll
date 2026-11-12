@@ -1055,6 +1055,9 @@ extension Defaults.Keys {
         static let showShelfQuickShareTile = Key<Bool>("showShelfQuickShareTile", default: false)
         static let screenshotsToShelf = Key<Bool>("screenshotsToShelf", default: false)
         static let screenshotShelfPreviousLocation = Key<String>("screenshotShelfPreviousLocation", default: "")
+        /// When Atoll last scanned the screenshot folder. On launch only screenshots
+        /// created after this are put on the shelf, so ones removed from it stay off.
+        static let screenshotShelfLastScanDate = Key<Date?>("screenshotShelfLastScanDate", default: nil)
         static let localSendSelectedDeviceID = Key<String>("localSendSelectedDeviceID", default: "")
         static let localSendDevicePickerGlassMode = Key<LockScreenGlassCustomizationMode>("localSendDevicePickerGlassMode", default: .standard)
         static let localSendDevicePickerLiquidGlassVariant = Key<LiquidGlassVariant>("localSendDevicePickerLiquidGlassVariant", default: .v11)
