@@ -377,7 +377,9 @@ struct MusicControlsView: View {
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(paused: isProgressTimelinePaused)) { timeline in
+        // Two ticks a second instead of every display frame; the filled track
+        // glides between ticks with a linear animation (see tickInterval).
+        TimelineView(.animation(minimumInterval: MusicSliderView.smoothTickInterval, paused: isProgressTimelinePaused)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -389,7 +391,8 @@ struct MusicControlsView: View {
                 elapsedTime: musicManager.elapsedTime,
                 playbackRate: musicManager.playbackRate,
                 isPlaying: musicManager.isPlaying,
-                isLiveStream: musicManager.isLiveStream
+                isLiveStream: musicManager.isLiveStream,
+                tickInterval: MusicSliderView.smoothTickInterval
             ) { newValue in
                 guard !musicManager.isLiveStream else { return }
                 MusicManager.shared.seek(to: newValue)
@@ -772,11 +775,16 @@ struct MusicSliderView: View {
     let playbackRate: Double
     let isPlaying: Bool
     let isLiveStream: Bool
+    /// When set, the timeline ticks this often and each tick animates the
+    /// slider linearly to the new position. nil = per-frame ticks, no animation.
+    var tickInterval: Double? = nil
     var onValueChange: (Double) -> Void
     var labelLayout: TimeLabelLayout = .stacked
     var trailingLabel: TrailingLabel = .duration
     var restingTrackHeight: CGFloat = 8
     var draggingTrackHeight: CGFloat = 14
+
+    static let smoothTickInterval: Double = 0.5
 
     enum TimeLabelLayout {
         case stacked
@@ -809,7 +817,14 @@ struct MusicSliderView: View {
         .onChange(of: currentDate) { newDate in
             guard !isLiveStream else { return }
             guard !dragging, timestampDate.timeIntervalSince(lastDragged) > -1 else { return }
-            setSliderValueWithoutAnimation(MusicManager.shared.estimatedPlaybackPosition(at: newDate))
+            let position = MusicManager.shared.estimatedPlaybackPosition(at: newDate)
+            if let tickInterval {
+                withTransaction(Transaction(animation: .linear(duration: tickInterval))) {
+                    sliderValue = position
+                }
+            } else {
+                setSliderValueWithoutAnimation(position)
+            }
         }
         .onChange(of: isPlaying) { _, playing in
             // Snap slider to the exact position when music pauses so
@@ -846,6 +861,7 @@ struct MusicSliderView: View {
             .fontWeight(.medium)
             .foregroundColor(timeLabelColor)
             .font(.system(size: 11, weight: .medium, design: .default).monospacedDigit())
+            .transaction { $0.animation = nil }
         }
     }
 
@@ -855,6 +871,7 @@ struct MusicSliderView: View {
                 .font(inlineLabelFont)
                 .foregroundColor(timeLabelColor)
                 .frame(width: 36, alignment: .leading)
+                .transaction { $0.animation = nil }
 
             sliderCore
                 .frame(height: sliderFrameHeight)
@@ -864,6 +881,7 @@ struct MusicSliderView: View {
                 .font(inlineLabelFont)
                 .foregroundColor(timeLabelColor)
                 .frame(width: 42, alignment: .trailing)
+                .transaction { $0.animation = nil }
         }
     }
 

@@ -190,13 +190,18 @@ class BluetoothAudioManager: ObservableObject {
             }
         }
 
-        if Defaults[.showAirPodsListeningModeChanges] {
-            listeningModeLogObserver.start()
-        }
-
-        Defaults.publisher(.showAirPodsListeningModeChanges, options: [])
-            .sink { [weak self] change in
-                if change.newValue {
+        // The `log stream` child only runs while the feature is on AND AirPods
+        // are connected; connectedDevices is emptied when Bluetooth powers off.
+        let hasAirPods = $connectedDevices
+            .map { devices in devices.contains { $0.deviceType.isAirPods } }
+        Defaults.publisher(.showAirPodsListeningModeChanges)
+            .map(\.newValue)
+            .combineLatest(hasAirPods)
+            .map { enabled, connected in enabled && connected }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldObserve in
+                if shouldObserve {
                     self?.listeningModeLogObserver.start()
                 } else {
                     self?.listeningModeLogObserver.stop()
@@ -212,6 +217,7 @@ class BluetoothAudioManager: ObservableObject {
         pollingTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             self?.checkForDeviceChanges()
         }
+        pollingTimer?.tolerance = 0.5
     }
     
     /// Checks for device connection/disconnection changes
@@ -2055,8 +2061,11 @@ private final class AirPodsListeningModeLogObserver {
     }
 
     func stop() {
-        process?.terminate()
-        process = nil
+        guard let process else { return }
+        (process.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+        process.terminate()
+        self.process = nil
+        queue.async { [weak self] in self?.lineBuffer = "" }
     }
 
     private func consume(_ text: String) {

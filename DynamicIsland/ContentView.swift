@@ -780,10 +780,18 @@ struct ContentView: View {
                     clearMusicControlVisibilityDeadline()
                 }
                 enqueueMusicControlWindowSync(forceRefresh: true)
-                startHiddenEdgeHoverPolling()
                 // Deterministic teardown for borderless panels (`.onDisappear` is
                 // unreliable); the window-cleanup path calls this before closing.
                 vm.onViewTeardown = { performViewTeardown() }
+            }
+            // The 50ms top-edge poll only runs while the island is hidden
+            // until hover (non-notch screen, setting on, island closed).
+            .onChange(of: shouldUseHiddenEdgeHoverPolling, initial: true) { _, shouldPoll in
+                if shouldPoll {
+                    startHiddenEdgeHoverPolling()
+                } else {
+                    stopHiddenEdgeHoverPolling()
+                }
             }
             .onChange(of: vm.notchState) { _, state in
                 if state == .open {
@@ -1977,17 +1985,13 @@ struct ContentView: View {
 
         hiddenEdgeHoverPollingTask = Task { @MainActor in
             while !Task.isCancelled {
-                if self.shouldUseHiddenEdgeHoverPolling {
-                    let hovering = self.hiddenHoverActivationContainsMouse()
-                    if hovering != self.isHovering {
-                        self.handleHover(hovering)
-                    }
+                let hovering = self.hiddenHoverActivationContainsMouse()
+                if hovering != self.isHovering {
+                    self.handleHover(hovering)
                 }
 
                 try? await Task.sleep(for: .milliseconds(50))
             }
-
-            self.hiddenEdgeHoverPollingTask = nil
         }
     }
 

@@ -216,7 +216,7 @@ final class SystemTimerBridge {
 
     private func setupTicker() {
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now(), repeating: .seconds(1), leeway: .milliseconds(150))
+        timer.schedule(deadline: .now(), repeating: .seconds(1), leeway: .milliseconds(500))
         timer.setEventHandler { [weak self] in
             self?.pollMenuExtra()
         }

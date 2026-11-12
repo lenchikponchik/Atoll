@@ -773,6 +773,7 @@ private struct MinimalisticReminderDetailsView: View {
     private var progressBar: some View {
         TimelineView(
             .animation(
+                minimumInterval: MusicSliderView.smoothTickInterval,
                 paused: isProgressTimelinePaused
             )
         ) { timeline in
@@ -791,6 +792,7 @@ private struct MinimalisticReminderDetailsView: View {
                 playbackRate: musicManager.playbackRate,
                 isPlaying: musicManager.isPlaying,
                 isLiveStream: musicManager.isLiveStream,
+                tickInterval: MusicSliderView.smoothTickInterval,
                 onValueChange: { newValue in
                     musicManager.seek(to: newValue)
                 },

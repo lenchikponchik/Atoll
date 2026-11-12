@@ -116,7 +116,7 @@ struct LockScreenWeatherWidget: View {
 			refreshTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: true) { [weak self] _ in
 				self?.fireNow()
 			}
-			refreshTimer?.tolerance = 0
+			refreshTimer?.tolerance = 2
 			if let refreshTimer {
 				RunLoop.main.add(refreshTimer, forMode: .common)
 			}
@@ -187,12 +187,12 @@ struct LockScreenWeatherWidget: View {
 				self.minuteTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { [weak self] _ in
 					self?.fireNow()
 				}
-				self.minuteTimer?.tolerance = 0
+				self.minuteTimer?.tolerance = 1
 				if let minuteTimer {
 					RunLoop.main.add(minuteTimer, forMode: .common)
 				}
 			}
-			minuteTimer?.tolerance = 0
+			minuteTimer?.tolerance = 1
 			if let minuteTimer {
 				RunLoop.main.add(minuteTimer, forMode: .common)
 			}

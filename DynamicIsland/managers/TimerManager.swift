@@ -187,6 +187,7 @@ class TimerManager: ObservableObject {
                 }
             }
         }
+        timerInstance?.tolerance = 0.2
     }
     
     func startDemoTimer(duration: TimeInterval) {
@@ -267,6 +268,7 @@ class TimerManager: ObservableObject {
                 }
             }
         }
+        timerInstance?.tolerance = 0.2
     }
 
     func adoptExternalTimer(name: String, totalDuration: TimeInterval, remaining: TimeInterval, isPaused: Bool) {

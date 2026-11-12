@@ -535,6 +535,7 @@ struct LockScreenMusicPanel: View {
     private var progressBar: some View {
         TimelineView(
             .animation(
+                minimumInterval: MusicSliderView.smoothTickInterval,
                 paused: isProgressTimelinePaused
             )
         ) { timeline in
@@ -553,6 +554,7 @@ struct LockScreenMusicPanel: View {
                 playbackRate: musicManager.playbackRate,
                 isPlaying: musicManager.isPlaying,
                 isLiveStream: musicManager.isLiveStream,
+                tickInterval: MusicSliderView.smoothTickInterval,
                 onValueChange: { newValue in
                     registerInteraction()
                     musicManager.seek(to: newValue)

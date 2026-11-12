@@ -795,6 +795,7 @@ final class SystemBrightnessController {
                 self.lastEmittedBrightness = max(0, min(1, system))
             }
         }
+        pollTimer?.tolerance = pollInterval * 0.2
     }
 
     deinit {

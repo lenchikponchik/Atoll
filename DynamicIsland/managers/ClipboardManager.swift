@@ -220,6 +220,7 @@ class ClipboardManager: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkClipboard()
         }
+        timer?.tolerance = 0.1
     }
     
     func stopMonitoring() {
