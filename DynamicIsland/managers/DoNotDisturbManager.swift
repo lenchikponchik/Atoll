@@ -65,8 +65,8 @@ final class DoNotDisturbManager: ObservableObject {
     private var toastDismissTask: Task<Void, Never>?
 
     private init() {
-        focusLogStream.onMetadataUpdate = { [weak self] identifier, name in
-            self?.handleLogMetadataUpdate(identifier: identifier, name: name)
+        focusLogStream.onMetadataUpdate = { [weak self] identifier, name, isActive in
+            self?.handleLogMetadataUpdate(identifier: identifier, name: name, isActive: isActive)
         }
 
         modeCancellable = Defaults.publisher(.focusMonitoringMode, options: [])
@@ -164,6 +164,19 @@ final class DoNotDisturbManager: ObservableObject {
             let previousName = self.currentFocusModeName
             let previousActive = self.isDoNotDisturbActive
 
+            // duetexpertd "starting: 0" line: Focus ended. Apply it only when it ends the
+            // mode we currently show. When switching modes (DND -> Reading) the old mode's
+            // end line can arrive around the new mode's start, and an end line arriving
+            // after the notification already turned Focus off must not resurrect metadata.
+            if source == DoNotDisturbManager.logStreamEndSource {
+                guard previousActive else { return }
+                if let usableIdentifier, !previousIdentifier.isEmpty, usableIdentifier != previousIdentifier {
+                    let endedMode = FocusModeType.resolve(identifier: usableIdentifier, name: usableName)
+                    let shownMode = FocusModeType.resolve(identifier: previousIdentifier, name: previousName)
+                    guard endedMode == shownMode, endedMode != .custom else { return }
+                }
+            }
+
             // When neither identifier nor name is available, only update the active
             // state without overwriting existing mode metadata. This prevents the
             // assertions-poll (which often lacks metadata) from reverting a correct
@@ -244,7 +257,7 @@ final class DoNotDisturbManager: ObservableObject {
             }
 
             // If Focus remains active and the mode switches (e.g., DND -> Sleep), trigger an ON toast for the new mode.
-            if isActive == nil, previousActive == true, identifierChanged {
+            if isActive != false, previousActive == true, identifierChanged {
                 self.focusToastTrigger = UUID()
             }
 
@@ -371,7 +384,9 @@ final class DoNotDisturbManager: ObservableObject {
         isFocusToastDismissing = false
     }
 
-    private func handleLogMetadataUpdate(identifier: String?, name: String?) {
+    private static let logStreamEndSource = "log-stream-end"
+
+    private func handleLogMetadataUpdate(identifier: String?, name: String?, isActive: Bool?) {
         metadataExtractionQueue.async { [weak self] in
             guard let self = self else { return }
             let trimmedIdentifier = identifier?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -382,7 +397,8 @@ final class DoNotDisturbManager: ObservableObject {
 
             guard hasIdentifier || hasName else { return }
 
-            self.publishMetadata(identifier: trimmedIdentifier, name: trimmedName, isActive: nil, source: "log-stream")
+            let source = (isActive == false) ? DoNotDisturbManager.logStreamEndSource : "log-stream"
+            self.publishMetadata(identifier: trimmedIdentifier, name: trimmedName, isActive: isActive, source: source)
         }
     }
 
@@ -1122,7 +1138,19 @@ private final class FocusLogStream {
     private var lastIdentifier: String?
     private var lastName: String?
 
-    var onMetadataUpdate: ((String?, String?) -> Void)?
+    /// (identifier, name, isActive). `isActive` comes from duetexpertd's
+    /// `starting: 1/0` flag; nil when the line carries no such flag.
+    var onMetadataUpdate: ((String?, String?, Bool?) -> Void)?
+
+    private static let startingPattern = try? NSRegularExpression(pattern: "starting:\\s*([01])\\b", options: [])
+
+    private static func extractStarting(from line: String) -> Bool? {
+        guard let regex = startingPattern else { return nil }
+        let range = NSRange(line.startIndex..<line.endIndex, in: line)
+        guard let match = regex.firstMatch(in: line, options: [], range: range),
+              let valueRange = Range(match.range(at: 1), in: line) else { return nil }
+        return line[valueRange] == "1"
+    }
 
     func start() {
         queue.async { [weak self] in
@@ -1295,7 +1323,15 @@ private final class FocusLogStream {
         nameToSend = lastName
         metadataLock.unlock()
 
-        notifyMetadataUpdate(identifier: identifierToSend, name: nameToSend)
+        let isActive = FocusLogStream.extractStarting(from: trimmed)
+        if isActive == false {
+            // Send the ended mode itself (not merged with older metadata) so the
+            // manager can tell whether the currently shown mode is the one that ended.
+            notifyMetadataUpdate(identifier: updatedIdentifier, name: updatedName, isActive: false)
+            return
+        }
+
+        notifyMetadataUpdate(identifier: identifierToSend, name: nameToSend, isActive: isActive)
     }
 
     private func clearMetadata() {
@@ -1303,7 +1339,7 @@ private final class FocusLogStream {
         lastIdentifier = nil
         lastName = nil
         metadataLock.unlock()
-        notifyMetadataUpdate(identifier: nil, name: nil)
+        notifyMetadataUpdate(identifier: nil, name: nil, isActive: nil)
     }
 
     private func handleTermination(terminateProcess: Bool = false) {
@@ -1324,9 +1360,9 @@ private final class FocusLogStream {
         debugPrint("[FocusLogStream] Stopped unified log tail for duetexpertd/donotdisturbd Focus metadata")
     }
 
-    private func notifyMetadataUpdate(identifier: String?, name: String?) {
+    private func notifyMetadataUpdate(identifier: String?, name: String?, isActive: Bool?) {
         guard let handler = onMetadataUpdate else { return }
-        handler(identifier, name)
+        handler(identifier, name, isActive)
     }
 }
 
