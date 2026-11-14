@@ -50,7 +50,7 @@ struct TabSelectionView: View {
     @Default(.quickShareProvider) private var quickShareProvider
     @State private var showQuickSharePopover = false
     @Default(.enableTimerFeature) var enableTimerFeature
-    @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.enableTelegramFeature) var enableTelegramFeature
     @Default(.enableColorPickerFeature) var enableColorPickerFeature
     @Default(.timerDisplayMode) var timerDisplayMode
     @Default(.enableThirdPartyExtensions) private var enableThirdPartyExtensions
@@ -86,9 +86,9 @@ struct TabSelectionView: View {
         if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
             tabsArray.append(TabModel(label: "AI", icon: "sparkles", view: .llmUsage))
         }
-        // System load (CPU, memory, GPU) right after the AI tab
-        if Defaults[.enableStatsFeature] {
-            tabsArray.append(TabModel(label: "Stats", icon: "chart.xyaxis.line", view: .stats))
+        // Telegram: latest messages, right after the AI tab (replaces the system load tab)
+        if enableTelegramFeature {
+            tabsArray.append(TabModel(label: "Telegram", icon: "paperplane.fill", view: .telegram))
         }
         if extensionTabsEnabled {
             for payload in extensionTabPayloads {
@@ -109,7 +109,7 @@ struct TabSelectionView: View {
         return tabsArray
     }
     var body: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 0) {
             ForEach(Array(tabs.enumerated()), id: \.element.id) { idx, tab in
                 let isSelected = isSelected(tab)
                 let activeAccent = tab.accentColor ?? .white
@@ -121,7 +121,6 @@ struct TabSelectionView: View {
                     }
                     coordinator.currentView = tab.view
                 }
-                .frame(height: 26)
                 .foregroundStyle(isSelected ? activeAccent : .gray)
                 .background {
                     if isSelected {
@@ -129,6 +128,7 @@ struct TabSelectionView: View {
                             .fill((tab.accentColor ?? Color(nsColor: .secondarySystemFill)).opacity(0.25))
                             .shadow(color: (tab.accentColor ?? .clear).opacity(0.4), radius: 8)
                             .matchedGeometryEffect(id: "capsule", in: animation)
+                            .padding(.vertical, 2)
                     } else {
                         Capsule()
                             .fill(Color.clear)
@@ -141,6 +141,9 @@ struct TabSelectionView: View {
             }
         }
         .clipShape(Capsule())
+        // Slots are taller/wider than the old glyph row: keep the header layout unchanged
+        .padding(.vertical, -(TabButton.slotHeight - 26) / 2)
+        .padding(.leading, -6)
         .onAppear {
             ensureValidSelection(with: tabs)
         }

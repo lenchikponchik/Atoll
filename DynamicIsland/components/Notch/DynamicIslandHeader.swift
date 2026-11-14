@@ -84,6 +84,7 @@ struct DynamicIslandHeader: View {
                                         .padding()
                                         .imageScale(.medium)
                                 }
+                                .enlargedHitArea()
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -111,6 +112,7 @@ struct DynamicIslandHeader: View {
                                         .padding()
                                         .imageScale(.medium)
                                 }
+                                .enlargedHitArea()
                         }
                         .buttonStyle(PlainButtonStyle())
                         .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
@@ -152,6 +154,7 @@ struct DynamicIslandHeader: View {
                                         .padding()
                                         .imageScale(.medium)
                                 }
+                                .enlargedHitArea()
                         }
                         .buttonStyle(PlainButtonStyle())
                         .popover(isPresented: $showColorPickerPopover, arrowEdge: .bottom) {
@@ -184,6 +187,7 @@ struct DynamicIslandHeader: View {
                                         .padding()
                                         .imageScale(.medium)
                                 }
+                                .enlargedHitArea()
                         }
                         .buttonStyle(PlainButtonStyle())
                         .popover(isPresented: $showTimerPopover, arrowEdge: .bottom) {
@@ -212,6 +216,7 @@ struct DynamicIslandHeader: View {
                                         .padding()
                                         .imageScale(.medium)
                                 }
+                                .enlargedHitArea()
                         }
                         .buttonStyle(PlainButtonStyle())
                     }

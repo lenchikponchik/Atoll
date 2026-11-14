@@ -70680,6 +70680,76 @@
           }
         }
       }
+    },
+    "Telegram messages need Full Disk Access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для сообщений Telegram нужен полный доступ к диску"
+          }
+        }
+      }
+    },
+    "Grant access" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дать доступ"
+          }
+        }
+      }
+    },
+    "Could not read Notification Center" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось прочитать Центр уведомлений"
+          }
+        }
+      }
+    },
+    "No new Telegram messages" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новых сообщений Telegram нет"
+          }
+        }
+      }
+    },
+    "Messages appear here when Telegram shows a notification" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщения появляются здесь, когда Telegram показывает уведомление"
+          }
+        }
+      }
+    },
+    "Show Telegram messages tab" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать вкладку сообщений Telegram"
+          }
+        }
+      }
+    },
+    "Enabling LLM Usage Monitor adds a Usage tab that tracks token usage and spend across your configured AI providers. The Telegram tab lists the latest messages Telegram showed as notifications; it needs Full Disk Access and reads them locally." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Монитор использования ИИ добавляет вкладку с расходом токенов и затратами по настроенным ИИ-провайдерам. Вкладка Telegram показывает последние сообщения, которые Telegram вывел уведомлениями; ей нужен полный доступ к диску, данные читаются только локально."
+          }
+        }
+      }
     }
   },
   "version" : "1.2"

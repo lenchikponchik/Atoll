@@ -650,6 +650,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ScreenshotShelfService.shared.start()
         }
 
+        // The system load (Stats) tab was removed: make sure nothing keeps sampling
+        if Defaults[.enableStatsFeature] {
+            Defaults[.enableStatsFeature] = false
+        }
+        StatsManager.shared.stopMonitoring()
+
+        // Latest Telegram messages for the Telegram tab
+        if !AppRuntimeEnvironment.isUITesting {
+            TelegramMessagesManager.shared.start()
+        }
+
         // Setup Do Not Disturb Manager
         if Defaults[.enableDoNotDisturbDetection] && !AppRuntimeEnvironment.isUITesting {
             dndManager.startMonitoring()

@@ -286,7 +286,11 @@ struct BatteryMenuView: View {
         }
         .padding()
         .frame(width: 280)
-        .foregroundStyle(.primary)
+        // The popover hangs half over the black island and half over whatever is behind
+        // it: the translucent system material made the text unreadable there
+        .foregroundStyle(.white)
+        .environment(\.colorScheme, .dark)
+        .background(Color(white: 0.11).scaleEffect(1.5))
     }
 
     private func openBatteryPreferences() {
@@ -341,6 +345,7 @@ struct DynamicIslandBatteryView: View {
                 isForNotification: isForNotification
             )
         }
+        .enlargedHitArea()
         .scaleEffect(isPressed ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isPressed)
         .gesture(

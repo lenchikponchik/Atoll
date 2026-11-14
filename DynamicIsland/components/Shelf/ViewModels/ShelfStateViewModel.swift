@@ -124,21 +124,30 @@ final class ShelfStateViewModel: ObservableObject {
     func cleanupInvalidItems() {
         Task { [weak self] in
             guard let self else { return }
-            var keep: [ShelfItem] = []
+            var invalid: [ShelfItem] = []
             for item in self.items {
-                switch item.kind {
-                case .file(let data):
-                    let bookmark = Bookmark(data: data)
-                    if await bookmark.validate() {
-                        keep.append(item)
-                    } else {
-                        item.cleanupStoredData()
-                    }
-                default:
-                    keep.append(item)
+                guard case .file(let data) = item.kind else { continue }
+                if await !Bookmark(data: data).validate() {
+                    invalid.append(item)
                 }
             }
-            await MainActor.run { self.items = keep }
+            guard !invalid.isEmpty else { return }
+            // Remove only what was checked: items added meanwhile must survive
+            let invalidIDs = Set(invalid.map(\.id))
+            invalid.forEach { $0.cleanupStoredData() }
+            self.items.removeAll { invalidIDs.contains($0.id) }
+            self.invalidateURLCache()
+            ExtensionRPCServer.shared.notifyShelfItemsChanged(itemIDs: invalid.map { $0.id.uuidString }, action: "removed")
+        }
+    }
+
+    /// Re-checks the shelf after files may have moved or disappeared (drag-out,
+    /// delayed screenshot deletion) so the closed-island counter never shows ghosts.
+    func scheduleCleanup(after delays: [TimeInterval] = [1, 4]) {
+        for delay in delays {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.cleanupInvalidItems()
+            }
         }
     }
 

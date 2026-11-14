@@ -1097,8 +1097,9 @@ extension Defaults.Keys {
     static let showAirPodsListeningModeChanges = Key<Bool>("showAirPodsListeningModeChanges", default: true)
     
     // MARK: Stats Feature
-    static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: true)
+    static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
     static let enableLLMUsageFeature = Key<Bool>("enableLLMUsageFeature", default: true)
+    static let enableTelegramFeature = Key<Bool>("enableTelegramFeature", default: true)
     static let enableClaudeProvider = Key<Bool>("enableClaudeProvider", default: true)
     static let enableCodexProvider = Key<Bool>("enableCodexProvider", default: true)
     static let enableCursorProvider = Key<Bool>("enableCursorProvider", default: true)

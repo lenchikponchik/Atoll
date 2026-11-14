@@ -869,7 +869,7 @@ struct SettingsView: View {
             SettingsSearchEntry(tab: .timer, title: "Accent colour", keywords: ["accent", "timer"], highlightID: SettingsTab.timer.highlightID(for: "Accent colour")),
 
             // Stats
-            SettingsSearchEntry(tab: .stats, title: "Enable system stats monitoring", keywords: ["stats", "monitoring"], highlightID: SettingsTab.stats.highlightID(for: "Enable system stats monitoring")),
+            SettingsSearchEntry(tab: .stats, title: "Show Telegram messages tab", keywords: ["telegram", "messages", "tab"], highlightID: SettingsTab.stats.highlightID(for: "Show Telegram messages tab")),
             SettingsSearchEntry(tab: .stats, title: "Enable LLM Usage Monitor", keywords: ["llm", "usage", "ai", "monitor"], highlightID: SettingsTab.stats.highlightID(for: "Enable LLM Usage Monitor")),
             SettingsSearchEntry(tab: .stats, title: "Claude Provider", keywords: ["llm", "claude", "provider", "toggle"], highlightID: SettingsTab.stats.highlightID(for: "Claude Provider")),
             SettingsSearchEntry(tab: .stats, title: "GPT Provider", keywords: ["llm", "codex", "gpt", "openai", "provider", "toggle"], highlightID: SettingsTab.stats.highlightID(for: "GPT Provider")),

@@ -80,9 +80,13 @@ final class ScreenshotShelfService {
             }
             if isScreenshot(url) {
                 ShelfStateViewModel.shared.remove(item)
-                knownFiles.remove(url.lastPathComponent)
+                // Keep the name in knownFiles: the file stays on disk for a few seconds and
+                // a folder rescan in that window would put it back on the shelf, leaving a
+                // ghost item (counter "1") once the file is deleted. scan() forgets the
+                // name by itself when the file is gone.
                 DispatchQueue.main.asyncAfter(deadline: .now() + Self.deletionDelay) {
                     try? FileManager.default.removeItem(at: url)
+                    ShelfStateViewModel.shared.cleanupInvalidItems()
                 }
             } else if isScreenCapture(url) {
                 // The file lives outside our folder: keep it, just take it off the shelf

@@ -430,6 +430,9 @@ private struct DraggableClickHandler<Content: View>: NSViewRepresentable {
             }
             draggedItems.removeAll()
             draggedSourceURLs.removeAll()
+
+            // The receiver may have moved or deleted the file (Trash, a move to another volume)
+            ShelfStateViewModel.shared.scheduleCleanup()
         }
         
         func ignoreModifierKeys(for session: NSDraggingSession) -> Bool {

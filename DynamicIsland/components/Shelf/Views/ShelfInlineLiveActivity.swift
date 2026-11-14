@@ -52,5 +52,9 @@ struct ShelfInlineLiveActivity: View {
                 .frame(width: sideWidth, alignment: .trailing)
         }
         .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
+        .onAppear {
+            // Never show a count for files that no longer exist
+            shelfState.cleanupInvalidItems()
+        }
     }
 }

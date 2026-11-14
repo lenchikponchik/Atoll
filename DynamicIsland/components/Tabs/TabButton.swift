@@ -27,11 +27,16 @@ struct TabButton: View {
     let icon: String
     let selected: Bool
     let onClick: () -> Void
+
+    static let slotWidth: CGFloat = 40
+    static let slotHeight: CGFloat = 30
     
     var body: some View {
         Button(action: onClick) {
             Image(systemName: icon)
-                .contentShape(Capsule())
+                // The whole slot is clickable, not just the glyph
+                .frame(width: TabButton.slotWidth, height: TabButton.slotHeight)
+                .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }

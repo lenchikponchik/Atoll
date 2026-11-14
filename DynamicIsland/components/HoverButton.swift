@@ -47,8 +47,8 @@ struct HoverButton: View {
         }) {
             Rectangle()
                 .fill(.clear)
-                .contentShape(Rectangle())
                 .frame(width: size, height: size)
+                .enlargedHitArea()
                 .overlay {
                     Capsule()
                         .fill(isHovering ? Color.gray.opacity(0.2) : .clear)
@@ -129,5 +129,16 @@ struct HoverButton: View {
     enum WiggleDirection {
         case clockwise
         case counterClockwise
+    }
+}
+
+
+extension View {
+    /// Grows the clickable area by `inset` points on every side without changing layout.
+    func enlargedHitArea(_ inset: CGFloat = 4) -> some View {
+        self
+            .padding(inset)
+            .contentShape(Rectangle())
+            .padding(-inset)
     }
 }

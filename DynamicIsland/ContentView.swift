@@ -1126,6 +1126,8 @@ struct ContentView: View {
                                   NotchStatsView()
                               case .llmUsage:
                                   NotchLLMUsageView()
+                              case .telegram:
+                                  NotchTelegramView()
                               case .colorPicker:
                                   NotchColorPickerView()
                             case .notes:
@@ -1888,11 +1890,24 @@ struct ContentView: View {
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
-                .onDrop(of: [.data], isTargeted: $vm.dragDetectorTargeting) { _ in true }
+                // A drop that lands outside the shelf panel (header, another tab) used to be
+                // accepted and thrown away; put it on the shelf instead
+                .onDrop(of: [.fileURL, .url, .utf8PlainText, .plainText, .data], isTargeted: $vm.dragDetectorTargeting) { providers in
+                    guard !ShelfSelectionModel.shared.isDragging else { return false }
+                    vm.dropEvent = true
+                    ShelfStateViewModel.shared.load(providers)
+                    coordinator.currentView = .shelf
+                    return true
+                }
                 .onChange(of: vm.anyDropZoneTargeting) { _, isTargeted in
                     if isTargeted, vm.notchState == .closed {
                         coordinator.currentView = .shelf
                         openNotch()
+                    } else if isTargeted {
+                        // Already open (e.g. by hover) on another tab: show the shelf
+                        if coordinator.currentView != .shelf, !ShelfSelectionModel.shared.isDragging {
+                            coordinator.currentView = .shelf
+                        }
                     } else if !isTargeted {
                         if vm.dropEvent {
                             vm.dropEvent = false

@@ -68,26 +68,20 @@ struct StatsSettings: View {
     var body: some View {
         Form {
             Section {
-                Defaults.Toggle(key: .enableStatsFeature) {
-                    Text("Enable system stats monitoring")
-                }
-                .settingsHighlight(id: highlightID("Enable system stats monitoring"))
-                .onChange(of: enableStatsFeature) { _, newValue in
-                    if !newValue {
-                        statsManager.stopMonitoring()
-                    }
-                    // Note: Smart monitoring will handle starting when switching to stats tab
-                }
-
                 Defaults.Toggle(key: .enableLLMUsageFeature) {
                     Text("Enable LLM Usage Monitor")
                 }
                 .settingsHighlight(id: highlightID("Enable LLM Usage Monitor"))
 
+                Defaults.Toggle(key: .enableTelegramFeature) {
+                    Text("Show Telegram messages tab")
+                }
+                .settingsHighlight(id: highlightID("Show Telegram messages tab"))
+
             } header: {
                 Text("General")
             } footer: {
-                Text("When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery. Enabling LLM Usage Monitor adds a Usage tab that tracks token usage and spend across your configured AI providers.")
+                Text("Enabling LLM Usage Monitor adds a Usage tab that tracks token usage and spend across your configured AI providers. The Telegram tab lists the latest messages Telegram showed as notifications; it needs Full Disk Access and reads them locally.")
                     .multilineTextAlignment(.trailing)
                     .foregroundStyle(.secondary)
                     .font(.caption)

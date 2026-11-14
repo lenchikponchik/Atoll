@@ -77,8 +77,8 @@ func enabledStandardTabCount() -> Int {
         count += 1
     }
 
-    // Stats tab
-    if Defaults[.enableStatsFeature] {
+    // Telegram tab (took the place of the removed Stats tab)
+    if Defaults[.enableTelegramFeature] {
         count += 1
     }
 

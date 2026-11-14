@@ -208,7 +208,7 @@ func applyProfileSettings(_ profiles: Set<String>) {
     let isDeveloper = profiles.contains("developer")
     if isDeveloper {
         Defaults[.enableColorPickerFeature] = true
-        Defaults[.enableStatsFeature] = true
+        Defaults[.enableStatsFeature] = false
         Defaults[.enableTimerFeature] = true
         Defaults[.enableScreenAssistant] = true
         Defaults[.showMirror] = false
