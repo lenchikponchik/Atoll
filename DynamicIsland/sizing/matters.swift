@@ -67,7 +67,9 @@ func enabledStandardTabCount() -> Int {
 func currentNotchTabSettings() -> NotchTabSettings {
     NotchTabSettings(
         homeVisible: Defaults[.enableMinimalisticUI]
-            || Defaults[.showStandardMediaControls] || Defaults[.showCalendar] || Defaults[.showMirror],
+            || Defaults[.showCalendar] || Defaults[.showHomeWeather] || Defaults[.showMirror],
+        // The minimalistic layout keeps its compact player on Home
+        musicEnabled: !Defaults[.enableMinimalisticUI] && Defaults[.showStandardMediaControls],
         shelfEnabled: Defaults[.dynamicShelf],
         timerEnabled: Defaults[.enableTimerFeature],
         timerShownAsTab: Defaults[.timerDisplayMode] == .tab,

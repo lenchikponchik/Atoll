@@ -71,6 +71,10 @@ struct ShelfItemView: View {
                         viewModel.handleClick(event: event, view: nsview)
                     }
                 )
+
+                // One-click removal, above the click handler so it gets the click
+                removeButton
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             } else {
                 Color.clear
                     .frame(width: 105)
@@ -126,6 +130,23 @@ struct ShelfItemView: View {
             .truncationMode(.middle)
             .multilineTextAlignment(.center)
             .frame(height: 30, alignment: .top)
+    }
+
+    private var removeButton: some View {
+        Button {
+            ShelfActionService.remove(item)
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 18, height: 18)
+                .background(Circle().fill(Color.black.opacity(0.75)))
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.25), lineWidth: 0.5))
+                .enlargedHitArea(3)
+        }
+        .buttonStyle(.plain)
+        .padding(4)
+        .help(Text("Remove from shelf"))
     }
 
     private var backgroundView: some View {

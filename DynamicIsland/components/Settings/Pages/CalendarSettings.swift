@@ -126,6 +126,9 @@ struct CalendarSettings: View {
                     }
                 }
 
+                Defaults.Toggle(key: .showHomeWeather) {
+                    Text("Show weather on the Home tab")
+                }
                 Defaults.Toggle(key: .showCalendar) {
                     Text("Show calendar")
                 }

@@ -1118,6 +1118,8 @@ struct ContentView: View {
                           switch coordinator.currentView {
                               case .home:
                                   NotchHomeView(albumArtNamespace: albumArtNamespace)
+                              case .music:
+                                  NotchMusicView(albumArtNamespace: albumArtNamespace)
                               case .shelf:
                                   NotchShelfView()
                               case .timer:
@@ -2337,7 +2339,9 @@ struct ContentView: View {
     }
 
     private func canPerformSkipGesture() -> Bool {
-        let canSkipInOpenHome = vm.notchState == .open && coordinator.currentView == .home
+        // The player is on the Music tab; the minimalistic layout keeps it on Home
+        let playerTab: NotchViews = enableMinimalisticUI ? .home : .music
+        let canSkipInOpenHome = vm.notchState == .open && coordinator.currentView == playerTab
         let canSkipInClosedMusic = !Defaults[.openNotchOnHover] && isClosedMusicGestureContext
 
         return enableHorizontalMusicGestures

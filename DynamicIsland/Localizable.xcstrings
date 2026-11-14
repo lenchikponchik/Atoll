@@ -70750,6 +70750,36 @@
           }
         }
       }
+    },
+    "Loading weather…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загружаю погоду…"
+          }
+        }
+      }
+    },
+    "Show weather on the Home tab" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать погоду на главной вкладке"
+          }
+        }
+      }
+    },
+    "Remove from shelf" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Убрать с полки"
+          }
+        }
+      }
     }
   },
   "version" : "1.2"

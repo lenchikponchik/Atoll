@@ -5,13 +5,14 @@ final class NotchTabRulesTests: XCTestCase {
 
     // TAB-1
     func testDefaultOrder() {
-        XCTAssertEqual(NotchTabSettings().visibleTabs, [.home, .shelf, .timer, .notes, .ai, .telegram])
+        XCTAssertEqual(NotchTabSettings().visibleTabs, [.home, .music, .shelf, .timer, .notes, .ai, .telegram])
     }
 
     func testEachFeatureTogglesOnlyItsOwnTab() {
         let all = NotchTabSettings().visibleTabs
         let cases: [(WritableKeyPath<NotchTabSettings, Bool>, NotchTabKind)] = [
             (\.homeVisible, .home),
+            (\.musicEnabled, .music),
             (\.shelfEnabled, .shelf),
             (\.timerEnabled, .timer),
             (\.notesEnabled, .notes),
@@ -38,7 +39,7 @@ final class NotchTabRulesTests: XCTestCase {
         XCTAssertFalse(settings.visibleTabs.contains(.clipboard))
 
         settings.notesEnabled = false
-        XCTAssertEqual(settings.visibleTabs, [.home, .shelf, .timer, .clipboard, .ai, .telegram])
+        XCTAssertEqual(settings.visibleTabs, [.home, .music, .shelf, .timer, .clipboard, .ai, .telegram])
 
         settings.clipboardShownAsTab = false
         XCTAssertFalse(settings.visibleTabs.contains(.clipboard))
@@ -53,7 +54,7 @@ final class NotchTabRulesTests: XCTestCase {
 
     func testEverythingOffGivesNoTabs() {
         let settings = NotchTabSettings(
-            homeVisible: false, shelfEnabled: false, timerEnabled: false, timerShownAsTab: false,
+            homeVisible: false, musicEnabled: false, shelfEnabled: false, timerEnabled: false, timerShownAsTab: false,
             notesEnabled: false, clipboardShownAsTab: false, aiEnabled: false,
             aiProviderAvailable: false, telegramEnabled: false
         )
@@ -61,8 +62,12 @@ final class NotchTabRulesTests: XCTestCase {
     }
 
     // TAB-7: there is no way to describe a Stats tab any more
-    func testNoSettingProducesMoreThanTheSixKnownTabs() {
-        XCTAssertEqual(NotchTabSettings().visibleTabs.count, 6)
+    func testNoSettingProducesMoreThanTheSevenKnownTabs() {
+        XCTAssertEqual(NotchTabSettings().visibleTabs.count, 7)
+    }
+
+    func testMusicTabSitsRightAfterHome() {
+        XCTAssertEqual(Array(NotchTabSettings().visibleTabs.prefix(2)), [.home, .music])
     }
 
     // OPEN-6

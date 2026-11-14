@@ -24,6 +24,8 @@ import Foundation
 /// Which standard tabs the open island shows, and in what order.
 enum NotchTabKind: Equatable {
     case home
+    /// The full music player; in minimalistic mode the player lives on Home instead.
+    case music
     case shelf
     case timer
     case notes
@@ -35,6 +37,7 @@ enum NotchTabKind: Equatable {
 
 struct NotchTabSettings: Equatable {
     var homeVisible = true
+    var musicEnabled = true
     var shelfEnabled = true
     var timerEnabled = true
     var timerShownAsTab = true
@@ -47,6 +50,7 @@ struct NotchTabSettings: Equatable {
     var visibleTabs: [NotchTabKind] {
         var tabs: [NotchTabKind] = []
         if homeVisible { tabs.append(.home) }
+        if musicEnabled { tabs.append(.music) }
         if shelfEnabled { tabs.append(.shelf) }
         if timerEnabled && timerShownAsTab { tabs.append(.timer) }
         if notesEnabled {

@@ -692,17 +692,9 @@ struct NotchHomeView: View {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @ObservedObject private var extensionNotchExperienceManager = ExtensionNotchExperienceManager.shared
     @ObservedObject private var musicManager = MusicManager.shared
-    @Default(.showStandardMediaControls) private var showStandardMediaControls
-    @Default(.autoHideInactiveNotchMediaPlayer) private var autoHideInactiveNotchMediaPlayer
+    @Default(.showCalendar) private var showCalendar
+    @Default(.showHomeWeather) private var showHomeWeather
     let albumArtNamespace: Namespace.ID
-
-    /// Whether the music player should actively display (enabled AND has real content).
-    /// `hasDisplayableSession` bridges the moment a player reports no track while switching
-    /// songs, so the calendar does not flash in.
-    private var shouldShowMusicPlayer: Bool {
-        showStandardMediaControls
-            && (!autoHideInactiveNotchMediaPlayer || musicManager.hasDisplayableSession)
-    }
 
     var body: some View {
         Group {
@@ -725,14 +717,8 @@ struct NotchHomeView: View {
                     MinimalisticMusicPlayerView(albumArtNamespace: albumArtNamespace)
                 }
             } else {
-                // Normal mode: Show full music player with optional calendar and webcam
-                if shouldShowMusicPlayer {
-                    MusicPlayerView(albumArtNamespace: albumArtNamespace)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                
-                // The calendar only takes the home tab when no music player is shown
-                if Defaults[.showCalendar] && !shouldShowMusicPlayer {
+                // Normal mode: schedule and weather; the player has its own Music tab
+                if showCalendar {
                     StandaloneCalendarView()
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .onHover { isHovering in
@@ -740,7 +726,12 @@ struct NotchHomeView: View {
                         }
                         .environmentObject(vm)
                 }
-                
+
+                if showHomeWeather {
+                    HomeWeatherView()
+                        .frame(maxWidth: showCalendar ? 190 : .infinity)
+                }
+
                 if Defaults[.showMirror],
                    webcamManager.cameraAvailable,
                    vm.notchState == .open {

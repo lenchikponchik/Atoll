@@ -57,6 +57,7 @@ struct TabSelectionView: View {
     @Default(.enableExtensionNotchExperiences) private var enableExtensionNotchExperiences
     @Default(.enableExtensionNotchTabs) private var enableExtensionNotchTabs
     @Default(.showCalendar) private var showCalendar
+    @Default(.showHomeWeather) private var showHomeWeather
     @Default(.showMirror) private var showMirror
     @Default(.showStandardMediaControls) private var showStandardMediaControls
     @Default(.enableMinimalisticUI) private var enableMinimalisticUI
@@ -67,6 +68,7 @@ struct TabSelectionView: View {
         var tabsArray: [TabModel] = currentNotchTabSettings().visibleTabs.map { kind in
             switch kind {
             case .home: return TabModel(label: "Home", icon: "house.fill", view: .home)
+            case .music: return TabModel(label: "Music", icon: "music.note", view: .music)
             case .shelf: return TabModel(label: "Shelf", icon: "tray.fill", view: .shelf)
             case .timer: return TabModel(label: "Timer", icon: "timer", view: .timer)
             case .notes: return TabModel(label: "Notes", icon: "note.text", view: .notes)
