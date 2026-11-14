@@ -41,7 +41,7 @@ final class ScreenshotShelfService {
     private static let deletionDelay: TimeInterval = 10
 
     private var source: DispatchSourceFileSystemObject?
-    private var knownFiles: Set<String> = []
+    private var scanState = ScreenshotScanState()
     private var cancellable: AnyCancellable?
 
     private init() {}
@@ -80,10 +80,9 @@ final class ScreenshotShelfService {
             }
             if isScreenshot(url) {
                 ShelfStateViewModel.shared.remove(item)
-                // Keep the name in knownFiles: the file stays on disk for a few seconds and
-                // a folder rescan in that window would put it back on the shelf, leaving a
-                // ghost item (counter "1") once the file is deleted. scan() forgets the
-                // name by itself when the file is gone.
+                // The name stays known (see ScreenshotScanState): the file stays on disk for
+                // a few seconds and a folder rescan in that window would put it back on the
+                // shelf, leaving a ghost item (counter "1") once the file is deleted.
                 DispatchQueue.main.asyncAfter(deadline: .now() + Self.deletionDelay) {
                     try? FileManager.default.removeItem(at: url)
                     ShelfStateViewModel.shared.cleanupInvalidItems()
@@ -164,12 +163,12 @@ final class ScreenshotShelfService {
             return
         }
 
-        knownFiles = Set(ShelfStateViewModel.shared.items.compactMap { item -> String? in
+        scanState = ScreenshotScanState(knownFiles: Set(ShelfStateViewModel.shared.items.compactMap { item -> String? in
             guard case let .file(bookmark) = item.kind,
                   let url = Bookmark(data: bookmark).resolveURL(),
                   isScreenshot(url) else { return nil }
             return url.lastPathComponent
-        })
+        }))
 
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: .write, queue: .main)
         source.setEventHandler {
@@ -192,17 +191,18 @@ final class ScreenshotShelfService {
             includingPropertiesForKeys: [.creationDateKey],
             options: [.skipsHiddenFiles]
         )) ?? []
-        for file in files {
+        let older = files.filter { file in
             let created = (try? file.resourceValues(forKeys: [.creationDateKey]))?.creationDate
-            if let created, created > cutoff { continue }
-            knownFiles.insert(file.lastPathComponent)
+            if let created, created > cutoff { return false }
+            return true
         }
+        scanState.markKnown(older.map(\.lastPathComponent))
     }
 
     private func stopWatching() {
         source?.cancel()
         source = nil
-        knownFiles.removeAll()
+        scanState.reset()
     }
 
     private func scan() {
@@ -215,12 +215,9 @@ final class ScreenshotShelfService {
 
         Defaults[.screenshotShelfLastScanDate] = Date()
 
-        let names = Set(files.map(\.lastPathComponent))
-        knownFiles.formIntersection(names)
-
-        let newFiles = files.filter { !knownFiles.contains($0.lastPathComponent) }
+        let newNames = Set(scanState.newFiles(inFolder: files.map(\.lastPathComponent)))
+        let newFiles = files.filter { newNames.contains($0.lastPathComponent) }
         guard !newFiles.isEmpty else { return }
-        knownFiles.formUnion(newFiles.map(\.lastPathComponent))
 
         Task {
             let items = await ShelfDropService.items(from: newFiles)

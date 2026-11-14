@@ -53,19 +53,10 @@ final class ShelfStateViewModel: ObservableObject {
 
     func add(_ newItems: [ShelfItem]) {
         guard !newItems.isEmpty else { return }
-        var merged = items
         // Deduplicate by identityKey while preserving order (existing first)
-        var seen: Set<String> = Set(merged.map { $0.identityKey })
-        var addedIDs: [String] = []
-        for it in newItems {
-            let key = it.identityKey
-            if !seen.contains(key) {
-                merged.append(it)
-                seen.insert(key)
-                addedIDs.append(it.id.uuidString)
-            }
-        }
-        items = merged
+        let result = ShelfListRules.mergeUnique(existing: items, new: newItems) { $0.identityKey }
+        let addedIDs = result.added.map { $0.id.uuidString }
+        items = result.merged
         invalidateURLCache()
         if !addedIDs.isEmpty {
             ExtensionRPCServer.shared.notifyShelfItemsChanged(itemIDs: addedIDs, action: "added")
@@ -135,7 +126,7 @@ final class ShelfStateViewModel: ObservableObject {
             // Remove only what was checked: items added meanwhile must survive
             let invalidIDs = Set(invalid.map(\.id))
             invalid.forEach { $0.cleanupStoredData() }
-            self.items.removeAll { invalidIDs.contains($0.id) }
+            self.items = ShelfListRules.removingInvalid(from: self.items, invalidIDs: invalidIDs) { $0.id }
             self.invalidateURLCache()
             ExtensionRPCServer.shared.notifyShelfItemsChanged(itemIDs: invalid.map { $0.id.uuidString }, action: "removed")
         }

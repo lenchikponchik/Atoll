@@ -31,7 +31,7 @@ var openNotchSize: CGSize {
     let storedWidth = Defaults[.openNotchWidth]
     let minWidth = currentRecommendedMinimumNotchWidth()
     let maxWidth = maxAllowedNotchWidth()
-    let width = min(max(storedWidth, minWidth), maxWidth)
+    let width = NotchSizingRules.clampedWidth(stored: storedWidth, minimum: minWidth, maximum: maxWidth)
     return .init(width: width, height: 200)
 }
 
@@ -60,46 +60,28 @@ func maxAllowedNotchWidth() -> CGFloat {
 /// Counts the number of currently enabled standard notch tabs.
 /// Mirrors the tab-building logic in ``TabSelectionView``.
 func enabledStandardTabCount() -> Int {
-    var count = 0
+    currentNotchTabSettings().visibleTabs.count
+}
 
-    // Home tab
-    if Defaults[.showStandardMediaControls] || Defaults[.showCalendar] || Defaults[.showMirror] {
-        count += 1
-    }
-
-    // Shelf tab
-    if Defaults[.dynamicShelf] {
-        count += 1
-    }
-
-    // Timer tab (only in .tab display mode)
-    if Defaults[.enableTimerFeature] && Defaults[.timerDisplayMode] == .tab {
-        count += 1
-    }
-
-    // Telegram tab (took the place of the removed Stats tab)
-    if Defaults[.enableTelegramFeature] {
-        count += 1
-    }
-
-    // Notes / Clipboard tab
-    if Defaults[.enableNotes] || (Defaults[.enableClipboardManager] && Defaults[.clipboardDisplayMode] == .separateTab) {
-        count += 1
-    }
-
-    // AI usage tab
-    if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
-        count += 1
-    }
-
-    return count
+/// The tab-affecting settings as they are right now.
+func currentNotchTabSettings() -> NotchTabSettings {
+    NotchTabSettings(
+        homeVisible: Defaults[.enableMinimalisticUI]
+            || Defaults[.showStandardMediaControls] || Defaults[.showCalendar] || Defaults[.showMirror],
+        shelfEnabled: Defaults[.dynamicShelf],
+        timerEnabled: Defaults[.enableTimerFeature],
+        timerShownAsTab: Defaults[.timerDisplayMode] == .tab,
+        notesEnabled: Defaults[.enableNotes],
+        clipboardShownAsTab: Defaults[.enableClipboardManager] && Defaults[.clipboardDisplayMode] == .separateTab,
+        aiEnabled: Defaults[.enableLLMUsageFeature],
+        aiProviderAvailable: ProviderID.hasAnyAvailable,
+        telegramEnabled: Defaults[.enableTelegramFeature]
+    )
 }
 
 /// Returns the recommended minimum notch width for the given tab count.
 func recommendedMinimumNotchWidth(forTabCount count: Int) -> CGFloat {
-    if count >= 6 { return 770 }
-    if count >= 5 { return 690 }
-    return 640
+    NotchSizingRules.recommendedMinimumWidth(forTabCount: count)
 }
 
 /// Returns the recommended minimum notch width for the current tab configuration.

@@ -661,6 +661,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             TelegramMessagesManager.shared.start()
         }
 
+        // Open the shelf before a dragged file hits the top edge (Mission Control)
+        if !AppRuntimeEnvironment.isUITesting {
+            DragApproachDetector.shared.start()
+        }
+
         // Setup Do Not Disturb Manager
         if Defaults[.enableDoNotDisturbDetection] && !AppRuntimeEnvironment.isUITesting {
             dndManager.startMonitoring()

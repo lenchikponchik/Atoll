@@ -20,16 +20,6 @@ import AppKit
 import Combine
 import Defaults
 import Foundation
-import SQLite3
-
-/// One Telegram message as it appeared in Notification Center.
-struct TelegramMessage: Identifiable, Equatable {
-    let id: String
-    let chat: String
-    let sender: String?
-    let text: String
-    let date: Date
-}
 
 /// Shows the latest Telegram messages by reading the notifications Telegram posted
 /// to Notification Center (needs Full Disk Access; nothing is sent anywhere and
@@ -49,11 +39,6 @@ final class TelegramMessagesManager: ObservableObject {
     @Published private(set) var messages: [TelegramMessage] = []
     @Published private(set) var state: State = .idle
 
-    nonisolated static let bundleIdentifiers = [
-        "ru.keepcoder.telegram",      // Telegram for macOS (App Store / direct)
-        "org.telegram.desktop",       // Telegram Desktop
-        "com.tdesktop.telegram"
-    ]
     private static let historyLimit = 40
 
     nonisolated private static var databaseURL: URL {
@@ -166,14 +151,8 @@ final class TelegramMessagesManager: ObservableObject {
         case .unavailable:
             if messages.isEmpty { state = .unavailable }
         case .messages(let fresh):
-            // Keep messages already seen this session: Notification Center forgets
-            // them as soon as the banner is dismissed or the chat is read
-            var merged: [String: TelegramMessage] = [:]
-            for message in messages { merged[message.id] = message }
-            for message in fresh { merged[message.id] = message }
-            let sorted = merged.values.sorted { $0.date > $1.date }
-            let trimmed = Array(sorted.prefix(Self.historyLimit))
-            if trimmed != messages { messages = trimmed }
+            let merged = TelegramNotificationStore.merge(existing: messages, fresh: fresh, limit: Self.historyLimit)
+            if merged != messages { messages = merged }
             if state != .ready { state = .ready }
         }
     }
@@ -187,81 +166,14 @@ final class TelegramMessagesManager: ObservableObject {
     }
 
     nonisolated private static func readNotifications() -> ReadResult {
-        let path = databaseURL.path
-        guard FileManager.default.isReadableFile(atPath: path) else {
+        switch TelegramNotificationStore.read(databasePath: databaseURL.path) {
+        case .unreadable:
             // Without Full Disk Access the group container cannot even be listed
             return FullDiskAccessAuthorization.hasPermission() ? .unavailable : .noAccess
-        }
-
-        var db: OpaquePointer?
-        guard sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, nil) == SQLITE_OK, let db else {
-            sqlite3_close(db)
+        case .unavailable:
             return .unavailable
+        case .messages(let messages):
+            return .messages(messages)
         }
-        defer { sqlite3_close(db) }
-        sqlite3_busy_timeout(db, 500)
-
-        let placeholders = bundleIdentifiers.map { _ in "?" }.joined(separator: ",")
-        let sql = """
-            SELECT r.rec_id, r.data, r.delivered_date, r.request_date
-            FROM record r JOIN app a ON a.app_id = r.app_id
-            WHERE LOWER(a.identifier) IN (\(placeholders))
-            ORDER BY r.rec_id DESC LIMIT 40
-            """
-        var statement: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK, let statement else {
-            return .unavailable
-        }
-        defer { sqlite3_finalize(statement) }
-
-        let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-        for (index, identifier) in bundleIdentifiers.enumerated() {
-            sqlite3_bind_text(statement, Int32(index + 1), identifier, -1, transient)
-        }
-
-        var result: [TelegramMessage] = []
-        while sqlite3_step(statement) == SQLITE_ROW {
-            let recordID = sqlite3_column_int64(statement, 0)
-            guard let bytes = sqlite3_column_blob(statement, 1) else { continue }
-            let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 1)))
-            let delivered = sqlite3_column_double(statement, 2)
-            let requested = sqlite3_column_double(statement, 3)
-            if let message = parse(data: data, recordID: recordID, fallbackDate: delivered > 0 ? delivered : requested) {
-                result.append(message)
-            }
-        }
-        return .messages(result)
-    }
-
-    /// The record payload is a binary plist: { date, req: { titl, subt, body } }.
-    nonisolated private static func parse(data: Data, recordID: Int64, fallbackDate: Double) -> TelegramMessage? {
-        guard let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
-              let request = plist["req"] as? [String: Any] else { return nil }
-
-        func text(_ key: String) -> String? {
-            let value = (request[key] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-            return value?.isEmpty == false ? value : nil
-        }
-
-        let title = text("titl")
-        let subtitle = text("subt")
-        guard let body = text("body") ?? subtitle else { return nil }
-
-        let timestamp: Double
-        if let date = plist["date"] as? Double, date > 0 {
-            timestamp = date
-        } else if let date = plist["date"] as? Date {
-            timestamp = date.timeIntervalSinceReferenceDate
-        } else {
-            timestamp = fallbackDate
-        }
-
-        return TelegramMessage(
-            id: "\(recordID)",
-            chat: title ?? "Telegram",
-            sender: text("body") == nil ? nil : subtitle,
-            text: body,
-            date: Date(timeIntervalSinceReferenceDate: timestamp)
-        )
     }
 }

@@ -63,32 +63,17 @@ struct TabSelectionView: View {
     @Namespace var animation
     
     private var tabs: [TabModel] {
-        var tabsArray: [TabModel] = []
-
-        if homeTabVisible {
-            tabsArray.append(TabModel(label: "Home", icon: "house.fill", view: .home))
-        }
-
-        if Defaults[.dynamicShelf] {
-            tabsArray.append(TabModel(label: "Shelf", icon: "tray.fill", view: .shelf))
-        }
-        
-        if enableTimerFeature && timerDisplayMode == .tab {
-            tabsArray.append(TabModel(label: "Timer", icon: "timer", view: .timer))
-        }
-
-        if Defaults[.enableNotes] || (Defaults[.enableClipboardManager] && Defaults[.clipboardDisplayMode] == .separateTab) {
-            let label = Defaults[.enableNotes] ? "Notes" : "Clipboard"
-            let icon = Defaults[.enableNotes] ? "note.text" : "doc.on.clipboard"
-            tabsArray.append(TabModel(label: label, icon: icon, view: .notes))
-        }
-        // AI usage tab (Claude, Codex/GPT, Cursor) sits last, where the terminal used to be
-        if Defaults[.enableLLMUsageFeature] && ProviderID.hasAnyAvailable {
-            tabsArray.append(TabModel(label: "AI", icon: "sparkles", view: .llmUsage))
-        }
-        // Telegram: latest messages, right after the AI tab (replaces the system load tab)
-        if enableTelegramFeature {
-            tabsArray.append(TabModel(label: "Telegram", icon: "paperplane.fill", view: .telegram))
+        // Which standard tabs exist is decided by NotchTabSettings (covered by LogicTests)
+        var tabsArray: [TabModel] = currentNotchTabSettings().visibleTabs.map { kind in
+            switch kind {
+            case .home: return TabModel(label: "Home", icon: "house.fill", view: .home)
+            case .shelf: return TabModel(label: "Shelf", icon: "tray.fill", view: .shelf)
+            case .timer: return TabModel(label: "Timer", icon: "timer", view: .timer)
+            case .notes: return TabModel(label: "Notes", icon: "note.text", view: .notes)
+            case .clipboard: return TabModel(label: "Clipboard", icon: "doc.on.clipboard", view: .notes)
+            case .ai: return TabModel(label: "AI", icon: "sparkles", view: .llmUsage)
+            case .telegram: return TabModel(label: "Telegram", icon: "paperplane.fill", view: .telegram)
+            }
         }
         if extensionTabsEnabled {
             for payload in extensionTabPayloads {
